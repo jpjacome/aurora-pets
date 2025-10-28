@@ -1,0 +1,448 @@
+:root {
+  /* Brand Colors */
+  --color-1: #fe8d2c;  
+  --color-2: #00452A;  
+  --color-3: #dcffd6;  
+
+  /* Neutral Colors */
+  --white: #ffffff;
+  --black: #000000;
+  --gray-100: #f5f5f5;
+  --gray-200: #e0e0e0;
+  --gray-300: #c6c6c6;
+  --gray-800: #2d2d2d;
+  
+  /* Typography */
+
+  --font-titles: 'Playfair Display', serif;
+  --font-paragraphs: 'Buenard', serif;
+
+  /* Border Radius */
+  --border-radius: 15px;
+
+  
+    font-family: Buenard;
+}
+
+
+@font-face {
+    font-family: Playfair;
+    src: url(../assets/fonts/PlayfairDisplay-VariableFont_wght.ttf);
+}
+@font-face{
+    font-family: Buenard;
+    src: url(../assets/fonts/Buenard-VariableFont_wght.ttf);
+}
+@font-face {
+  font-family: Chunkfive;
+  src: url(../assets/fonts/ChunkFive-Regular.otf);
+}
+
+
+
+body{
+    margin: 0;
+    overflow-x: hidden;
+    width: 100vw;
+    width: 100dvw;
+    height: fit-content;
+    background-color: var(--color-2);
+    overflow-y: scroll;
+}
+
+a{
+    text-decoration: none;
+    color: var(--color-1);
+    text-shadow: none;
+}
+
+h1{
+    font-family: Playfair Display;
+    font-size: 4rem;
+    text-shadow: none;
+    line-height: 1em;
+    font-weight: 400;
+    color: var(--color-3);
+  }
+  h2{
+    font-family: Playfair Display;
+    font-size: calc(2.5em + 1.5vw);
+    text-shadow: none;
+    line-height: 1em;
+    font-weight: 400;
+    color: var(--color-3);
+  }
+  h3{
+    font-family: Playfair Display;
+    font-size: calc(.9em + .5vw);
+    text-shadow: none;
+    line-height: 1em;
+    font-weight: 400;
+    color: var(--color-3);
+  }
+
+p{
+    font-family: Buenard;
+    font-size: calc(1em + .5vw);
+    font-weight: 400;
+    line-height: 1.3em;
+    color: var(--color-3);
+    text-shadow: none;
+}
+
+.highlights-a{ font-weight: 400; color: var(--color-3); }
+.highlights-b{ font-weight: 700; color: var(--color-2); }
+.highlights-c{ color: var(--color-1); font-weight: 600; }
+
+button{
+    background-color: var(--color-2);
+    color: var(--color-3);
+    cursor: pointer;
+    border: transparent;
+    text-align: left;
+    font-size: calc(1em + .5vw);
+    width: fit-content;
+    padding: .6rem 1.3rem;
+    border-radius: 30px;
+}
+    button:hover{            
+        background-color: var(--color-1);
+    }
+
+.btn {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.35rem;
+    font-weight: 400;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-family: var(--font-paragraphs);
+    text-shadow: none;
+}
+
+.btn-primary {
+    background: var(--color-1);
+    color: var(--color-2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    background: #ff9942;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--color-3);
+    border: 2px solid var(--color-3);
+}
+
+.btn-secondary:hover {
+    background: var(--color-3);
+    color: var(--color-2);
+    transform: translateY(-2px);
+}
+
+/* Header/menu/whatsapp styles moved from home-style.css to centralize site-wide header styling.
+   The home-specific logo animation remains in home-style.css (.logo-header-b). */
+header{
+  position: fixed;
+  top: 0;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--color-2);
+  border-bottom: 3px solid var(--color-1);
+  z-index: 999;
+}
+  header:hover{
+    border-bottom: 3px solid var(--color-1);
+    background-color: #00452b;
+  }
+  .header::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #00452b;
+    z-index: -1;
+    opacity: 1;
+    transition: .5s ease-in-out;
+  }
+  header .header-logo{
+    position: relative;
+  }
+  header a{
+    z-index: 1;
+  }
+  header img{
+    position: relative;
+    top: 0rem;
+    height: 50px;
+    margin: 1rem 5rem;
+    transition: width .9s ease-in-out, top .9s ease-in-out;
+    z-index: 1;
+  }
+    @media only screen and (max-width: 800px) {
+      header img{
+        width: 220px!important;
+        height: auto;
+        margin: 0;
+        margin-left: 1rem;
+      }
+    }
+
+  header .menu-items{
+    display: flex;
+    gap: 0rem;
+    margin-right: 3rem;
+    margin-left: auto;
+    color: var(--color-3);
+    align-items: center;
+    justify-content: flex-start;
+    font-family: Buenard, Verdana, Geneva, Tahoma, sans-serif;
+  }
+    @media only screen and (max-width: 800px) {
+      header .menu-items{
+        display: none;
+      }
+    }
+    .menu-items a{
+      color: var(--color-3);
+    }
+    .menu-items span{
+      cursor: pointer;
+    }
+      .menu-items span h3{
+        position: relative;
+        top: 1px;
+        display: flex;
+        margin: .8rem;
+        padding: .7rem 1.3rem;
+        cursor: pointer;
+        align-items: center;
+        border-radius: 30px;
+        transition: top .2s ease-in-out, box-shadow .3s ease-in-out;
+        box-shadow: 0px 2px transparent
+      }
+      .menu-items span h3:hover{
+        background-color: var(--color-1);
+        box-shadow: 0px 2px 5px #123527d4;
+        top: 0px;
+      }
+
+    .whatsapp{
+      height: 60px;
+      width: 60px;
+      z-index: 999;
+      padding: 0.05rem;
+      background-color: #fe8d2c90;
+      border-radius: 10px;
+    }
+      .whatsapp:hover{
+        background-color: var(--color-1);
+      }
+      .whatsapp:hover .whatsapp-icon{
+        transform: scale(1.05);
+        background-image: url(/assets/home/imgs/icon-whatsappc.png);
+      }
+      .whatsapp:hover .whatsapp-icon::after{
+        opacity: 1;
+      }
+      .whatsapp-icon{
+        position: relative;
+        height: 100%;
+        width: 100%;
+        background-image: url(/assets/home/imgs/icon-whatsappb.png);
+        background-position: center;
+        background-size: 90%;
+        background-repeat: no-repeat;
+        transition: .1s ease-in-out;    
+      }
+        .whatsapp-icon::after{
+          opacity: 0;
+          content: 'Escríbenos por WhatsApp';
+          position: absolute;
+          right: 0;
+          top: 106%;
+          width: 150%;
+          color: #fff;
+          background-color: var(--color-2);
+          padding: 0.1rem 0.5rem;
+          border-radius: 5px;
+        }
+        @media only screen and (max-width: 800px) {
+          .whatsapp{
+            margin: 1rem 0;
+          }
+        }
+
+/* Header action icons (login) */
+.header-actions{
+    display: flex;
+    gap: 0.75rem;
+    margin-right: 1rem;
+    height: 100%;
+    align-items: center;
+}
+.icon-button{
+  /* Make the header icon button match admin icon sizing and behaviour */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-3);
+  background: transparent;
+  border-radius: 50%;
+  margin-right: 10px;
+  padding: 0;
+  cursor: pointer;
+  transition: background .2s ease, transform .12s ease, color .12s ease;
+}
+.icon-button:hover{
+  background: var(--color-1);
+  color: white;
+  transform: scale(1.05);
+}
+.icon-button:focus{
+  outline: none;
+  box-shadow: 0 0 0 6px rgba(254,141,44,0.08);
+}
+.icon-button i, .icon-button svg{ display:block; font-size: 1.6rem; line-height: 1; }
+
+
+/* #region FOOTER */
+
+footer{
+  height: 50px;
+  width: 100%;
+  border-top: .5rem solid var(--color-1);
+  background-color: var(--color-2);
+}
+
+footer .container{
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+footer .container .info{
+    display: flex;
+    gap: 15px;
+    height: 100%;
+    align-items: flex-end;
+    margin-right: 2rem;
+}
+footer .container .info p{
+    margin: 0 0 3px;
+    font-size: clamp(14px, 1.5vw, 1.2rem);
+}
+
+footer img{
+  height: 40px;
+  margin-left: 2rem;
+}
+
+/* #endregion FOOTER */
+
+
+/* #region LOGIN */
+
+
+.login-container{
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1rem;
+  box-sizing: border-box;
+}
+.login-container{
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1rem;
+  box-sizing: border-box;
+}
+.login-card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  border-radius: var(--border-radius);
+  padding: 2.25rem;
+  width: 420px;
+  max-width: calc(100% - 2rem);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.login-container h1{
+  font-family: var(--font-titles);
+  color: var(--color-3);
+  margin: 0 0 1rem 0;
+  font-size: 1.75rem;
+  text-align: center;
+}
+.form-row{
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+.form-row label{
+  color: var(--color-3);
+  font-size: 0.95rem;
+}
+.form-input{
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+  color: var(--color-3);
+  font-family: var(--font-paragraphs);
+  width: 100%;
+  box-sizing: border-box;
+}
+.form-input::placeholder{
+  color: rgba(220,255,214,0.6);
+}
+.form-input:focus{
+  outline: none;
+  border-color: var(--color-1);
+  box-shadow: 0 0 0 6px rgba(254,141,44,0.06);
+}
+.btn-primary{
+  width: 100%;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  border-radius: 12px;
+}
+.admin-footer{
+  margin-top: 0.75rem;
+  text-align: center;
+  color: rgba(220,255,214,0.85);
+  font-size: 0.9rem;
+}
+@media only screen and (max-width: 480px){
+  .admin-card{ padding: 1.25rem; width: calc(100% - 2rem); }
+  .admin-container{ padding: 4rem 0.75rem; }
+}
+.login-footer{
+  margin-top: 0.75rem;
+  text-align: center;
+  color: rgba(220,255,214,0.85);
+  font-size: 0.9rem;
+}
+@media only screen and (max-width: 480px){
+  .login-card{ padding: 1.25rem; width: calc(100% - 2rem); }
+  .login-container{ padding: 4rem 0.75rem; }
+}
+
+/* #endregion LOGIN */

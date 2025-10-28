@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Capuchino</title>
+        <link rel="stylesheet" href="./template1-style.css">
+        <link rel="shortcut icon" href="/assets/imgs/favicon3.ico" type="image/x-icon">
+    
+        <!-- Open Graph tags for social media sharing -->
+        <meta property="og:title" content="Capuchino">
+        <meta property="og:description" content="Aurora - Capuchino Perfil">
+        <meta property="og:image" content="https://auroraurn.pet/perfiles/capuchino/imgs/11.png">
+        <meta property="og:url" content="https://auroraurn.pet/perfiles/capuchino/capuchino.html">
+        <meta property="og:type" content="website">
+    
+        <!-- Twitter Card tags -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Capuchino">
+        <meta name="twitter:description" content="Aurora - Capuchino Perfil">
+        <meta name="twitter:image" content="https://auroraurn.pet/perfiles/capuchino/imgs/11.png">
+    </head>
+    
+<body>
+  
+    <header>
+        <img src="/assets/imgs/logo4.png" alt="">
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+    <span id="mascota"></span>
+    <div class="menu">
+        <span><a href="#mascota">Información mascota</a></span>
+        <span><a href="#info-planta">Información planta</a></span>    
+    </div>
+
+<main>
+    <div class="wrapper">
+        <div class="mascota">
+            <div class="foto-mascota">
+                <div id="slider-mascota" class="slider-mascota">
+                    <!-- Main images will be inserted here by JavaScript -->
+                </div>
+                <div class="thumbnails-mascota" id="thumbnails-mascota">
+                    <!-- Thumbnails will be inserted here by JavaScript -->
+                </div>
+            </div>
+            
+            <div class="datos-mascota">
+                <h1 id="nombre"></h1><p id="raza"></p>
+                <p id="fechaNacimiento">-</p>
+                <p id="edad">-</p>
+            </div>
+        </div>
+        <span id="info-planta"></span>
+            <div class="planta">
+                <div class="foto-planta">
+                    <div id="slider" class="slider">
+                    </div>
+                    <div class="thumbnails" id="thumbnails">
+                        <!-- Thumbnails will be inserted here by JavaScript -->
+                    </div>
+                </div>
+            
+                <div class="datos-planta">
+                    <h3 id="tipodeplanta"><strong></strong> </h3>
+                    <p><strong>Familia:</strong> <span id="familia"></p>
+                    <p><strong>Especie:</strong> <span id="especie"></p>
+                    <h3 class="description-title"><strong>🪴 Tipo de sustrato:</strong></h3>
+                    <p class="description" id="sustrato"></p>
+                    <h3 class="description-title"><strong>☀️ Iluminación:</strong></h3>
+                    <p class="description" id="iluminacion"></p>
+                    <h3 class="description-title"><strong>💦 Riego:</strong></h3>
+                    <p class="description" id="riego"></p>
+                    <span id="desarrollo-planta"></span>
+                </div>
+            </div>
+    </div>
+
+</main>
+
+<footer>
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script>
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // HAMBURGER ICON
+        $(document).ready(function() {
+            $('.hamburger').click(function() {
+                $(this).toggleClass('active');
+                $('.menu').toggleClass('menu-active');
+            });
+        });
+    
+        $(document).ready(function() {
+            $('.description-title').click(function(){
+                $(this).toggleClass("description-title-on");
+                $(this).next(".description").toggleClass("description-on");
+            });
+        });
+    
+        // Replace 'Your-Notion-Endpoint' with your actual Notion API endpoint
+        var apiEndpoint = './notion-proxy.php';
+        
+        // Create a new XMLHttpRequest
+        var request = new XMLHttpRequest();
+        
+        // Initialize a GET request
+        request.open('GET', apiEndpoint, true);
+        
+        // Send the request
+        request.send();
+        
+        // Handle the response
+        request.onload = function() {
+            if (request.status >= 200 && request.status < 400) {
+                // Success! Parse the response as JSON
+                var data = JSON.parse(request.responseText);
+                var result = data.results[0].properties;
+                
+                // Helper function to safely get rich text value
+                function getRichText(propertyName) {
+                    if(result[propertyName] &&
+                       result[propertyName].rich_text &&
+                       result[propertyName].rich_text.length > 0) {
+                        return result[propertyName].rich_text[0].plain_text;
+                    }
+                    return '';  // Default if empty
+                }
+                
+                // Helper function to safely get date value
+                function getDate(propertyName) {
+                    if(result[propertyName] &&
+                       result[propertyName].date &&
+                       result[propertyName].date.start) {
+                        return result[propertyName].date.start;
+                    }
+                    return '';
+                }
+                
+                // NOMBRE
+                var name = getRichText('Nombre');
+                document.getElementById('nombre').textContent = name;            
+                
+                // FOTOS MASCOTA (check if field exists and is an array)
+                if(result['Fotos mascota'] && result['Fotos mascota'].files && result['Fotos mascota'].files.length > 0) {
+                    var petPhotosArray = result['Fotos mascota'].files;
+                    var sliderMascota = document.getElementById('slider-mascota');
+                    var thumbnailsMascota = document.getElementById('thumbnails-mascota');
+                    
+                    petPhotosArray.forEach(function(photo, index) {
+                        if(photo.file && photo.file.url) {
+                            // Main slider image
+                            var img = document.createElement('img');
+                            img.src = photo.file.url;
+                            img.alt = "Pet Photo";
+                            sliderMascota.appendChild(img);
+    
+                            // Thumbnail
+                            var thumbnail = document.createElement('img');
+                            thumbnail.src = photo.file.url;
+                            thumbnail.alt = "Thumbnail " + (index + 1);
+                            thumbnailsMascota.appendChild(thumbnail);
+    
+                            // Click event for thumbnail
+                            thumbnail.addEventListener('click', function() {
+                                showSlideMascota(index);
+                            });
+                        }
+                    });
+                    
+                    var currentMascotaIndex = 0;
+                    function showSlideMascota(index) {
+                        var slides = document.querySelectorAll('#slider-mascota img');
+                        if (slides.length === 0) return;
+                        if (index >= slides.length) {
+                            currentMascotaIndex = 0;
+                        } else if (index < 0) {
+                            currentMascotaIndex = slides.length - 1;
+                        } else {
+                            currentMascotaIndex = index;
+                        }
+                        slides.forEach(function(slide) {
+                            slide.style.display = 'none';
+                        });
+                        slides[currentMascotaIndex].style.display = 'block';
+                    }
+                    // Show the first slide initially
+                    showSlideMascota(currentMascotaIndex);
+                }
+    
+                // RAZA
+                var raza = getRichText('Raza');
+                document.getElementById('raza').textContent = raza ? 'Raza: ' + raza : '';
+    
+                // FECHA DE NACIMIENTO
+                var fechaNacimiento = getDate('Fecha de nacimiento');
+                document.getElementById('fechaNacimiento').textContent = fechaNacimiento ? 'Fecha de nacimiento: ' + fechaNacimiento : '';
+    
+                // EDAD
+                var edad = getRichText('Edad');
+                document.getElementById('edad').textContent = edad ? 'Edad: ' + edad : '';
+    
+                // TIPO DE PLANTA
+                var plantType = getRichText('Nombre Planta');            
+                document.getElementById('tipodeplanta').textContent = plantType;
+    
+                // FAMILIA DE PLANTA
+                var familia = getRichText('Familia Planta');            
+                document.getElementById('familia').textContent = familia ? 'Familia: ' + familia : '';
+    
+                // ESPECIE DE PLANTA
+                var especie = getRichText('Especie Planta');            
+                document.getElementById('especie').textContent = especie;
+    
+                // TIPO DE SUSTRATO
+                var sustrato = getRichText('Tipo de Sustrato');     
+                document.getElementById('sustrato').textContent = sustrato;
+
+                // ILUMINACION
+                var iluminacion = getRichText('Iluminacion');     
+                document.getElementById('iluminacion').textContent = iluminacion;
+
+                // RIEGO
+                var riego = getRichText('Riego');     
+                document.getElementById('riego').textContent = riego;
+
+    
+                // FOTOS DE LA PLANTA (check if field exists and is an array)
+                if(result['Fotos de la planta'] && result['Fotos de la planta'].files && result['Fotos de la planta'].files.length > 0) {
+                    var plantPhotosArray = result['Fotos de la planta'].files;
+                    var slider = document.getElementById('slider');
+                    var thumbnails = document.getElementById('thumbnails');
+                    
+                    plantPhotosArray.forEach(function(photo, index) {
+                        if(photo.file && photo.file.url) {
+                            // Main slider image
+                            var img = document.createElement('img');
+                            img.src = photo.file.url;
+                            img.alt = "Plant Photo";
+                            slider.appendChild(img);
+    
+                            // Thumbnail
+                            var thumbnail = document.createElement('img');
+                            thumbnail.src = photo.file.url;
+                            thumbnail.alt = "Thumbnail " + (index + 1);
+                            thumbnails.appendChild(thumbnail);
+    
+                            // Click event for thumbnail
+                            thumbnail.addEventListener('click', function() {
+                                showSlide(index);
+                            });
+                        }
+                    });
+                    
+                    var currentIndex = 0;
+                    function showSlide(index) {
+                        var slides = document.querySelectorAll('#slider img');
+                        if (slides.length === 0) return;
+                        if (index >= slides.length) {
+                            currentIndex = 0;
+                        } else if (index < 0) {
+                            currentIndex = slides.length - 1;
+                        } else {
+                            currentIndex = index;
+                        }
+                        slides.forEach(function(slide) {
+                            slide.style.display = 'none';
+                        });
+                        slides[currentIndex].style.display = 'block';
+                    }
+                    // Show the first slide initially
+                    showSlide(currentIndex);
+                }
+            } else {
+                // We reached our target server, but it returned an error
+                console.error('Error: ' + request.status);
+            }
+        };
+        
+        request.onerror = function() {
+            console.error('Connection error');
+        };
+    </script>
+    
+    <div class="container">
+    <div class="info">
+      <p>Quito, Ecuador.</p>
+      <p>+593 99 784 402</p>
+      <p>info@aurorapets.com</p>
+    </div>
+    <img src="/assets/imgs/logo1.png" alt="">
+  </div>
+</footer>
+
+</body>
+</html>

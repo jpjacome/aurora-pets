@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlantScan Email Preview - Aurora</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Buenard:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Buenard', Georgia, serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00452A 0%, #006B3F 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .form-section h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: #00452A;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Buenard', Georgia, serif;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #fe8d2c;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #fe8d2c 0%, #ff6f3c 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-family: 'Playfair Display', Georgia, serif;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(254, 141, 44, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            display: none;
+            text-align: center;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        .result-section h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: #00452A;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .canvas-container {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        #resultCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .download-btn {
+            margin-top: 1.5rem;
+            background: linear-gradient(135deg, #00452A 0%, #006B3F 100%);
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+        .info-box p {
+            margin: 0;
+            color: #1565c0;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌿 PlantScan Email Preview</h1>
+            <p>Genera y previsualiza la imagen que recibirán los usuarios por correo</p>
+        </div>
+
+        <div class="content">
+            <div class="form-section">
+                <h2>Datos de Prueba</h2>
+                
+                <div class="form-group">
+                    <label for="petName">Nombre de la mascota:</label>
+                    <input type="text" id="petName" value="Luna" placeholder="Ej: Max, Luna, Milo">
+                </div>
+
+                <div class="form-group">
+                    <label for="plantName">Planta asignada:</label>
+                    <select id="plantName">
+                        <option value="Monstera Deliciosa">Monstera Deliciosa</option>
+                        <option value="Schefflera">Schefflera</option>
+                        <option value="Pensamientos (Viola tricolor)">Pensamientos (Viola tricolor)</option>
+                        <option value="San Pedro">San Pedro</option>
+                        <option value="Limonero">Limonero</option>
+                        <option value="Buganvilla">Buganvilla</option>
+                        <option value="Zamioculca">Zamioculca</option>
+                        <option value="Syngonium Neon Pink">Syngonium Neon Pink</option>
+                        <option value="Sanseviera">Sanseviera</option>
+                        <option value="Cala">Cala</option>
+                        <option value="Syngonium Three Kings">Syngonium Three Kings</option>
+                        <option value="Anturio">Anturio</option>
+                        <option value="Calathea Triostar">Calathea Triostar</option>
+                        <option value="Monstera Adansonii">Monstera Adansonii</option>
+                        <option value="Helecho nativo">Helecho nativo</option>
+                        <option value="Capulí">Capulí</option>
+                        <option value="Jade">Jade</option>
+                        <option value="Syngonium Confettii">Syngonium Confettii</option>
+                        <option value="Cholán">Cholán</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="plantDescription">Descripción (opcional):</label>
+                    <input type="text" id="plantDescription" value="Gracias por completar el test. Basado en tus respuestas, Monstera Deliciosa refleja la energía de Luna." placeholder="Descripción personalizada">
+                </div>
+
+                <div class="info-box">
+                    <p><strong>💡 Tip:</strong> La imagen generada es de 1080x1920px (formato Instagram Story) y usa las mismas fuentes y colores del sitio web.</p>
+                </div>
+
+                <button class="btn" onclick="generatePreview()">🎨 Generar Vista Previa</button>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <h2>Vista Previa del Email</h2>
+                <p style="color: #666; margin-bottom: 1rem;">Esta es la imagen que recibirá el usuario adjunta al correo:</p>
+                
+                <div class="canvas-container">
+                    <canvas id="resultCanvas" width="1080" height="1600"></canvas>
+                </div>
+
+                <button class="btn download-btn" onclick="downloadImage()">💾 Descargar Imagen</button>
+                
+                <div class="info-box" style="margin-top: 1.5rem;">
+                    <p><strong>✅ Listo!</strong> Así se verá la imagen adjunta en el email. El usuario también recibirá el texto del email en formato markdown.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Plant image slug mapping (same as prevention.js)
+        const PLANT_IMAGE_MAP = {
+            "pensamientos-viola-tricolor": "pensamiento.png",
+            "san-pedro": "san-pedro.png",
+            "limonero": "citrus-lemon.png",
+            "schefflera": "schefflera.png",
+            "monstera-deliciosa": "monstera-deliciosa.png",
+            "buganvilla": "buganvilla.png",
+            "zamioculca": "zamioculca.png",
+            "syngonium-neon-pink": "syngonium-neon-pink.png",
+            "sanseviera": "sanseviera.png",
+            "cala": "cala-roja.png",
+            "syngonium-three-kings": "syngonium-three-kings.png",
+            "anturio": "anturio.png",
+            "calathea-triostar": "calathea-triostar.png",
+            "monstera-adansonii": "monstera-adasonii.png",
+            "helecho-nativo": "helecho-nativo.png",
+            "capuli": "capuli.png",
+            "jade": "jade.png",
+            "syngonium-confettii": "syngonium-confetti.png",
+            "cholan": "cholan.png"
+        };
+
+        function slugifyForFilename(name) {
+            if (!name) return "";
+            const noParens = String(name).replace(/\(.*?\)/g, "");
+            return noParens
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/-+/g, "-")
+                .replace(/^-|-$/g, "");
+        }
+
+        function getPlantImageSrc(plantName) {
+            const slug = slugifyForFilename(plantName);
+            const filename = PLANT_IMAGE_MAP[slug] || `${slug}.png`;
+            return `./assets/plantscan/imgs/plants/${filename}`;
+        }
+
+        async function generatePreview() {
+            const petName = document.getElementById('petName').value.trim() || 'tu mascota';
+            const plantName = document.getElementById('plantName').value;
+            let description = document.getElementById('plantDescription').value.trim();
+            
+            if (!description) {
+                description = `Gracias por completar el test! Basado en tus respuestas, ${plantName} refleja la energía de ${petName}.`;
+            }
+
+            const plantImageSrc = getPlantImageSrc(plantName);
+
+            // Load fonts before drawing
+            try {
+                await Promise.all([
+                    document.fonts.load('bold 64px "Playfair Display"'),
+                    document.fonts.load('32px "Buenard"'),
+                    document.fonts.load('bold 80px "Playfair Display"'),
+                    document.fonts.load('bold 42px "Playfair Display"'),
+                    document.fonts.load('36px "Buenard"')
+                ]);
+            } catch (e) {
+                console.warn('Font loading failed, using fallbacks:', e);
+            }
+
+            const canvas = document.getElementById('resultCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Background: solid dark green
+            ctx.fillStyle = '#00452A';
+            ctx.fillRect(0, 0, 1080, 1600);
+
+            // Load and draw plant image
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = function() {
+                // Top title: "¡La planta perfecta para [pet name]!"
+                ctx.fillStyle = '#fe8d2c';
+                ctx.font = 'bold 64px "Playfair Display", Georgia, serif';
+                ctx.textAlign = 'center';
+                
+                // Wrap title text if needed
+                const titleText = `¡La planta perfecta para ${petName}!`;
+                const maxWidth = 900;
+                const words = titleText.split(' ');
+                let line = '';
+                let y = 150; // Reduced from 280 to 180 (moved up 100px)
+                const lineHeight = 75;
+                
+                for (let word of words) {
+                    const testLine = line + word + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > maxWidth && line !== '') {
+                        ctx.fillText(line.trim(), 540, y);
+                        line = word + ' ';
+                        y += lineHeight;
+                    } else {
+                        line = testLine;
+                    }
+                }
+                ctx.fillText(line.trim(), 540, y);
+
+                // Plant image (3:4 aspect ratio, centered)
+                const imgWidth = 600;
+                const imgHeight = 800;
+                const imgX = (1080 - imgWidth) / 2;
+                const imgY = 230; // Reduced from 500 to 350 (moved up 150px)
+                
+                ctx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
+
+                // Plant name below image
+                ctx.fillStyle = '#fe8d2c';
+                ctx.font = 'bold 80px "Playfair Display", Georgia, serif';
+                ctx.fillText(plantName, 540, imgY + imgHeight + 100);
+
+                // Plant description (wrapped text)
+                ctx.fillStyle = '#dcffd6';
+                ctx.font = '32px "Buenard", Georgia, serif';
+                const descMaxWidth = 800;
+                const descWords = description.split(' ');
+                let descLine = '';
+                let descY = imgY + imgHeight + 180;
+                const descLineHeight = 42;
+                let lineCount = 0;
+                const maxLines = 3;
+                
+                for (let word of descWords) {
+                    if (lineCount >= maxLines) break;
+                    const testLine = descLine + word + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > descMaxWidth && descLine !== '') {
+                        ctx.fillText(descLine.trim(), 540, descY);
+                        descLine = word + ' ';
+                        descY += descLineHeight;
+                        lineCount++;
+                    } else {
+                        descLine = testLine;
+                    }
+                }
+                if (lineCount < maxLines && descLine.trim()) {
+                    ctx.fillText(descLine.trim() + (lineCount === maxLines - 1 ? '...' : ''), 540, descY);
+                }
+
+                // Bottom: Aurora logo (replacing "Aurora Pets" text)
+                const logo = new Image();
+                logo.crossOrigin = 'anonymous';
+                logo.onload = function() {
+                    // Draw logo centered at bottom (adjusted to fit nicely)
+                    const logoWidth = 300; // Adjust size as needed
+                    const logoHeight = (logo.height / logo.width) * logoWidth; // Maintain aspect ratio
+                    const logoX = (1080 - logoWidth) / 2;
+                    const logoY = 1360; // Adjusted for shorter canvas height
+                    
+                    ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
+                    
+                    // Website URL (moved closer to logo)
+                    ctx.font = '36px "Buenard", Georgia, serif';
+                    ctx.fillStyle = '#dcffd6';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('auroraurn.pet/plantscan', 540, logoY + logoHeight + 50);
+                    
+                    // Show result section
+                    document.getElementById('resultSection').classList.add('active');
+                    document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+                };
+                logo.onerror = function() {
+                    // Fallback: use text if logo doesn't load
+                    console.warn('Logo failed to load, using text fallback');
+                    ctx.fillStyle = '#fe8d2c';
+                    ctx.font = 'bold 42px "Playfair Display", Georgia, serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Aurora Pets', 540, 1420);
+                    
+                    // Website URL
+                    ctx.font = '36px "Buenard", Georgia, serif';
+                    ctx.fillStyle = '#dcffd6';
+                    ctx.fillText('auroraurn.pet/plantscan', 540, 1490);
+                    
+                    // Show result section anyway
+                    document.getElementById('resultSection').classList.add('active');
+                    document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+                };
+                // Load the Aurora logo (adjust path as needed)
+                logo.src = './assets/plantscan/imgs/logo.png';
+            };
+            
+            img.onerror = () => {
+                alert('Error: No se pudo cargar la imagen de la planta. Asegúrate de que el archivo existe en assets/plantscan/imgs/plants/');
+            };
+            
+            img.src = plantImageSrc;
+        }
+
+        function downloadImage() {
+            const canvas = document.getElementById('resultCanvas');
+            const petName = document.getElementById('petName').value.trim() || 'mascota';
+            const plantName = document.getElementById('plantName').value;
+            const filename = `${petName}-${plantName}-Aurora.png`.replace(/\s+/g, '-');
+            
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        }
+    </script>
+</body>
+</html>
