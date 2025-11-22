@@ -4,102 +4,19 @@ gsap.registerPlugin(ScrollTrigger, ScrollSmoother, SplitText);
 // Fix mobile viewport height issue (address bar shows/hides)
 // Calculate and set custom --vh property
 function setVhProperty() {
-    // MOBILE FIX: Don't update --vh on mobile when keyboard is open (input focused)
-    // This prevents wrappers from resizing when the keyboard appears
-    if (window.innerWidth <= 600 && window.__ps_inputFocused) {
-        return; // Skip update when mobile keyboard is showing
-    }
-    
-    // Prefer the Visual Viewport height when available (handles address-bar show/hide)
-    const vv = (window.visualViewport && typeof window.visualViewport.height === 'number') ? window.visualViewport.height : window.innerHeight;
-    const vh = vv * 0.01;
+    // Prefer visualViewport height when available (handles mobile chrome show/hide)
+    const viewportHeight = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    const vh = viewportHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
 }
 
 // Set on load
 setVhProperty();
 
-// Prevent browsers from restoring previous scroll position on navigation (mobile only)
-try {
-    if (window.innerWidth <= 600 && window.history && 'scrollRestoration' in window.history) {
-        window.history.scrollRestoration = 'manual';
-    }
-} catch (e) {}
-
 // Update on resize and orientation change
 window.addEventListener('resize', setVhProperty);
 window.addEventListener('orientationchange', () => {
     setTimeout(setVhProperty, 100); // Small delay for orientation change
-});
-
-// Debounced refresh helper (mobile-only) to re-sync GSAP/ScrollTrigger when viewport changes
-// Uses gsap.utils.debounce which is available because GSAP is registered above
-// Provide a local debounce fallback because some GSAP builds may not include utils.debounce
-function localDebounce(fn, wait) {
-    let t = null;
-    return function(...args) {
-        if (t) clearTimeout(t);
-        t = setTimeout(() => { fn.apply(this, args); t = null; }, wait);
-    };
-}
-
-const debouncedRefresh = (gsap && gsap.utils && typeof gsap.utils.debounce === 'function' ? gsap.utils.debounce : localDebounce)(function() {
-    // If a user is actively interacting with a form control, skip refresh to avoid stealing focus/scroll
-    if (window.__ps_inputFocused) return;
-    // Only run for mobile phones (not tablets/desktop)
-    if (window.innerWidth > 600) return;
-
-    // MOBILE FIX: Don't refresh ScrollTrigger on mobile since we don't use pinning/stacking
-    // ScrollTrigger.refresh() causes wrapper displacement when keyboard opens
-    // Mobile uses native scrolling without GSAP effects
-    
-    // Only handle scroll lock position updates if needed (desktop-only feature)
-    try {
-        const smoother = window.ScrollSmoother ? ScrollSmoother.get() : null;
-        if (typeof scrollLockActive !== 'undefined' && scrollLockActive && smoother) {
-            if (typeof smoother.scrollTop === 'function') {
-                lockScrollPosition = smoother.scrollTop();
-            }
-        }
-    } catch (e) {}
-
-}, 80);
-
-// If VisualViewport API exists, listen for its resize/scroll events to detect address-bar toggles
-// MOBILE FIX: Only update --vh property, don't trigger debounced refresh which calls ScrollTrigger.refresh()
-if (window.visualViewport) {
-    const onVVChange = function() {
-        setVhProperty();
-        // Don't call debouncedRefresh() on mobile - it causes wrapper displacement via ScrollTrigger.refresh()
-        // Mobile uses native scrolling without GSAP pinning effects
-    };
-    try {
-        visualViewport.addEventListener('resize', onVVChange);
-        visualViewport.addEventListener('scroll', onVVChange);
-    } catch (e) {}
-}
-
-// Also trigger debounced refresh on global resize/orientationchange
-// MOBILE FIX: These events can trigger ScrollTrigger.refresh() which breaks mobile layout
-// Only respond to actual orientation changes on mobile, not resize (which happens with keyboard)
-window.addEventListener('resize', function() {
-    // Only trigger refresh on desktop/tablet (>600px)
-    if (window.innerWidth > 600) {
-        debouncedRefresh();
-    } else {
-        // On mobile, only update --vh property without triggering GSAP refresh
-        setVhProperty();
-    }
-});
-
-window.addEventListener('orientationchange', function() {
-    setTimeout(function() {
-        setVhProperty();
-        // Only trigger GSAP refresh on desktop/tablet
-        if (window.innerWidth > 600) {
-            debouncedRefresh();
-        }
-    }, 140);
 });
 
 function scrollToSection(sectionNumber) {
@@ -581,17 +498,6 @@ function unlockAndScrollToNext() {
         return; // Don't proceed if validation fails
     }
     
-    // Mobile-specific: Show wrapper-5 (loading animation) when calculation starts
-    const isMobile = window.innerWidth <= 600;
-    if (isMobile) {
-        const wrapper5 = document.querySelector('.wrapper-5');
-        if (wrapper5) {
-            wrapper5.classList.add('mobile-active');
-            // Scroll to top to ensure user sees the loading animation
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }
-    
     // debug removed
     
     // Compute result now and cache it for the result renderer
@@ -610,11 +516,8 @@ function unlockAndScrollToNext() {
             const plantNameEl = resultsContainer.querySelector('[data-plant]');
             if (plantNameEl) plantNameEl.textContent = res.plantName;
 
-            // Keep the server/blade-provided description in the DOM untouched.
-            // Do not overwrite the <p data-description> here so it can display
-            // the static message rendered by the Blade template.
-            // const descEl = resultsContainer.querySelector('[data-description]');
-            // if (descEl) descEl.textContent = buildPlantDescription(res);
+            const descEl = resultsContainer.querySelector('[data-description]');
+            if (descEl) descEl.textContent = buildPlantDescription(res);
 
             const imgEl = resultsContainer.querySelector('[data-plant-img]');
             if (imgEl) setImageWithFallback(imgEl, getPlantImageSrc(res.plantName));
@@ -643,33 +546,15 @@ function unlockAndScrollToNext() {
             
             console.log('📧 User consented to receive email, generating image...');
             
-            // Prepare data for image generation (description must come from DB)
+            // Prepare data for image generation
             const imageData = {
                 petName: res.inputs.petName || 'tu mascota',
                 plantName: res.plantName || 'tu planta',
-                description: null, // will be fetched from server
+                description: buildPlantDescription(res),
                 image: getPlantImageSrc(res.plantName),
                 url: window.lastShareUrl || window.location.href
             };
-
-            // Try to fetch the plant description from the server (do not embed descriptions in the page)
-            try {
-                const descResp = await fetch(`/plants/description?name=${encodeURIComponent(res.plantName)}`);
-                if (descResp && descResp.ok) {
-                    const descJson = await descResp.json();
-                    if (descJson && descJson.description) {
-                        imageData.description = descJson.description;
-                    }
-                }
-            } catch (e) {
-                console.warn('Failed to fetch plant description from server, will fall back to generated text.', e);
-            }
-
-            // Fallback to computed description if server didn't provide one
-            if (!imageData.description) {
-                imageData.description = buildPlantDescription(res);
-            }
-
+            
             // Generate the story image (same function used for social sharing)
             const { blob, dataUrl } = await generateStoryImage(imageData);
             const fileName = `${res.inputs.petName}-${res.plantName}-Aurora.png`.replace(/\s+/g, '-');
@@ -693,24 +578,13 @@ function unlockAndScrollToNext() {
     // debug removed
     }
     
-    // Mark section-5 as unlocked internally so programmatic navigation to it will stick,
-    // but do NOT release the GSAP scroll lock yet — keep the lock active to prevent
-    // the user or snap logic from advancing to section-6 until the loading timer completes.
-    // This avoids releasing GSAP/ScrollTrigger here which can trigger internal refreshes
-    // and programmatic scrolls that jump to section-6 prematurely.
-    maxUnlockedSection = Math.max(maxUnlockedSection, 5);
-    window.dispatchEvent(new CustomEvent('sectionUnlocked'));
-    // Temporarily disable scroll snap to allow the smooth scroll to section-5 to finish
-    if (window.scrollSnapControl) {
-        window.scrollSnapControl.temporaryDisable(1500);
-    }
+    // Unlock the next section
+    unlockNextSection();
     
-    // Scroll to the newly unlocked section (start loading UI quickly)
+    // Scroll to the newly unlocked section
     setTimeout(() => {
         scrollToSection(5);
-        // Ensure loading phrases and svgs are visible for a full 6 seconds,
-        // then unlock & show result in section-6. This is intentionally
-        // independent of how fast image generation or server calls complete.
+        // Allow loading animation to play briefly in section-5, then unlock & show result in section-6
         setTimeout(() => {
             const desc = buildPlantDescription(result);
             // Before showing, unlock and scroll to section-6 so results are shown there
@@ -719,9 +593,9 @@ function unlockAndScrollToNext() {
             window.dispatchEvent(new CustomEvent('sectionUnlocked'));
             scrollToSection(6);
             // Small delay so the scroll has time to settle before animating
-            setTimeout(() => showPlantResult(result.plantName, desc), 300);
-        }, 6000); // Keep loading UI visible for 6 seconds
-    }, 300); // Show section-5 quickly (300ms) after pressing Calcular
+            setTimeout(() => showPlantResult(result.plantName, desc), 600);
+        }, 5000);
+    }, 100); // Small delay to ensure scroll lock is released
 
     // After computing the result, send the test run to the server and wait for confirmation
     (async function sendTestToServer(res) {
@@ -779,12 +653,8 @@ function unlockAndScrollToNext() {
 }
 
 // Initialize ScrollSmoother
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if mobile (≤600px) - disable stacking effects for mobile only
-    const isMobile = window.innerWidth <= 600;
-    
-    // Create ScrollSmoother instance (disabled for mobile)
-    const smoother = !isMobile ? ScrollSmoother.create({
+document.addEventListener('DOMContentLoaded', function() {            // Create ScrollSmoother instance
+    const smoother = ScrollSmoother.create({
         wrapper: '#smooth-wrapper',
         content: '#smooth-content',
         
@@ -810,160 +680,166 @@ document.addEventListener('DOMContentLoaded', function() {
             // Called on every scroll update - simplified for performance
         },
         
-    }) : null;    // **SOLUTION: True deck-of-cards stacking effect**
+    });    // **SOLUTION: True deck-of-cards stacking effect**
     // All sections stack on top of each other at the top of the screen
-    // ONLY ENABLED FOR DESKTOP/TABLET (>600px)
-    if (!isMobile) {
-        let sections = gsap.utils.toArray('.wrapper');
+    let sections = gsap.utils.toArray('.wrapper');
+    
+    sections.forEach((section, i) => {
+        // Set z-index so first section is on bottom, last section is on top
+        gsap.set(section, { zIndex: i + 1 });
         
-        sections.forEach((section, i) => {
-            // Set z-index so first section is on bottom, last section is on top
-            gsap.set(section, { zIndex: i + 1 });
-            
-            // Create the main stacking ScrollTrigger
-            ScrollTrigger.create({
-                trigger: section,
-                start: 'top top',
-                end: `+=${window.innerHeight}`,
-                pin: true,
-                pinSpacing: false,
-                scroller: '#smooth-wrapper',
-                onUpdate: (self) => {
-                    // As we scroll through this section, scale down all previous sections
-                    const progress = self.progress;
+        // Create the main stacking ScrollTrigger
+        ScrollTrigger.create({
+            trigger: section,
+            start: 'top top',
+            // Use the current visual viewport height when available so pin length matches CSS --vh
+            end: `+=${((window.visualViewport && window.visualViewport.height) || window.innerHeight)}`,
+            pin: true,
+            pinSpacing: false,
+            scroller: '#smooth-wrapper',
+            onUpdate: (self) => {
+                // As we scroll through this section, scale down all previous sections
+                const progress = self.progress;
+                
+                // Scale down and move previous sections
+                for (let j = 0; j < i; j++) {
+                    const scale = 1 - (progress * 0.05 * (i - j)); // Gradual scale down
+                    const y = progress * -20 * (i - j); // Move up slightly
                     
-                    // Scale down and move previous sections
-                    for (let j = 0; j < i; j++) {
-                        const scale = 1 - (progress * 0.05 * (i - j)); // Gradual scale down
-                        const y = progress * -20 * (i - j); // Move up slightly
-                        
-                        gsap.set(sections[j], {
-                            scale: scale,
-                            y: y,
-                            transformOrigin: 'center top'
-                        });
-                    }
+                    gsap.set(sections[j], {
+                        scale: scale,
+                        y: y,
+                        transformOrigin: 'center top'
+                    });
                 }
-            });
+            }
         });
-    }    
+    });    
     
     // **ELEGANT POP ANIMATIONS FOR INNER CONTAINERS**
     // Create beautiful entrance animations for each inner container (EXCEPT wrapper-1)
-    // ONLY ENABLED FOR DESKTOP/TABLET (>600px)
-    if (!isMobile) {
-        const innerContainers = gsap.utils.toArray('.inner-container').filter((container, index) => {
-            // Exclude wrapper-1's inner-container (index 0) since it has its own page load animation
-            return index !== 0;
-        });
-        
-        innerContainers.forEach((container, i) => {
-            // Set initial state - hidden and smaller
-            gsap.set(container, {
-                opacity: 0,
-                scale: 0.8,
-                y: 60,
-                rotationX: 15,
-                transformOrigin: "center center"
-            });
-            
-            // Create the pop animation timeline - one-time entrance only
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: container.closest('.wrapper'), // Trigger on parent wrapper instead
-                    start: 'top 80%', // Start when container is 80% in view
-                    end: 'top 20%', // End when container reaches 20% from top
-                    toggleActions: 'play none none reverse', // Play on enter, reverse on leave
-                    scroller: '#smooth-wrapper', // Use same scroller as ScrollSmoother
-                    // Optional: Add markers for debugging (remove in production)
-                    // markers: true,
-                    onToggle: self => {
-                        if (self.isActive) {
-                        } else {
-                        }
-                    }
-                }
-            });
-            
-            // Animate container only
-            tl.to(container, {
-                opacity: 1,
-                scale: 1,
-                y: 0,
-                rotationX: 0,
-                duration: 1.2,
-                ease: "back.out(1.4)", // Bouncy ease for pop effect
-                delay: i * 0.15 // Stagger animation for each container
-            });
-            
-            container.addEventListener('mouseleave', () => {
-                gsap.to(container, {
-                    boxShadow: "0 0 0px rgba(255, 255, 255, 0)",
-                    scale: 1,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
-            });
-        });
-    } else {
-        // Mobile: ensure all inner containers are immediately visible (no animations)
-        const innerContainers = gsap.utils.toArray('.inner-container');
-        innerContainers.forEach((container) => {
-            gsap.set(container, {
-                opacity: 1,
-                scale: 1,
-                y: 0,
-                rotationX: 0,
-                clearProps: "all"
-            });
-        });
-    }    // Refresh ScrollTrigger on window resize
-    window.addEventListener('resize', () => {
-        ScrollTrigger.refresh();
+    const innerContainers = gsap.utils.toArray('.inner-container').filter((container, index) => {
+        // Exclude wrapper-1's inner-container (index 0) since it has its own page load animation
+        return index !== 0;
     });
     
-    // Initialize scroll lock system - GSAP-native approach (desktop/tablet only)
-    if (!isMobile) {
-        setTimeout(() => {
-            createGSAPScrollLock();
-        }, 1000); // Delay to ensure all other ScrollTriggers are created first
-    }
+    innerContainers.forEach((container, i) => {
+        // Set initial state - hidden and smaller
+        gsap.set(container, {
+            opacity: 0,
+            scale: 0.8,
+            y: 60,
+            rotationX: 15,
+            transformOrigin: "center center"
+        });
+        
+        // Create the pop animation timeline - one-time entrance only
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: container.closest('.wrapper'), // Trigger on parent wrapper instead
+                start: 'top 80%', // Start when container is 80% in view
+                end: 'top 20%', // End when container reaches 20% from top
+                toggleActions: 'play none none reverse', // Play on enter, reverse on leave
+                scroller: '#smooth-wrapper', // Use same scroller as ScrollSmoother
+                // Optional: Add markers for debugging (remove in production)
+                // markers: true,
+                onToggle: self => {
+                    if (self.isActive) {
+                    } else {
+                    }
+                }
+            }
+        });
+        
+        // Animate container only
+        tl.to(container, {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            rotationX: 0,
+            duration: 1.2,
+            ease: "back.out(1.4)", // Bouncy ease for pop effect
+            delay: i * 0.15 // Stagger animation for each container
+        });
+        
+        container.addEventListener('mouseleave', () => {
+            gsap.to(container, {
+                boxShadow: "0 0 0px rgba(255, 255, 255, 0)",
+                scale: 1,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+    });    // Refresh ScrollTrigger on window resize
+    // Debounced resize handler: update --vh and refresh GSAP systems
+    window.addEventListener('resize', gsap.utils.debounce(() => {
+        setVhProperty();
+        ScrollTrigger.refresh();
+        const s = ScrollSmoother.get && ScrollSmoother.get();
+        if (s && typeof s.resize === 'function') {
+            try { s.resize(); } catch (e) { /* ignore */ }
+        }
+    }, 150));
 
-    // **SCROLL SNAP SYSTEM** - GSAP ScrollTrigger-based implementation (desktop/tablet only)
+    // If visualViewport is available (mobile), listen for its resize/scroll events
+    if (window.visualViewport) {
+        let vvTimer = null;
+        const onVisualViewportChange = () => {
+            setVhProperty();
+            clearTimeout(vvTimer);
+            vvTimer = setTimeout(() => {
+                ScrollTrigger.refresh();
+                const s = ScrollSmoother.get && ScrollSmoother.get();
+                if (s && typeof s.resize === 'function') {
+                    try { s.resize(); } catch (e) { /* ignore */ }
+                }
+            }, 120);
+        };
+        window.visualViewport.addEventListener('resize', onVisualViewportChange);
+        window.visualViewport.addEventListener('scroll', onVisualViewportChange);
+        // Toggling focus (keyboard) can change viewport chrome too
+        window.addEventListener('focus', onVisualViewportChange);
+        window.addEventListener('blur', onVisualViewportChange);
+    }
+    
+    // Initialize scroll lock system - GSAP-native approach
+    setTimeout(() => {
+        createGSAPScrollLock();
+    }, 1000); // Delay to ensure all other ScrollTriggers are created first
+
+    // **SCROLL SNAP SYSTEM** - GSAP ScrollTrigger-based implementation
     // Initialize scroll snapping after ScrollSmoother is ready
-    if (!isMobile) {
-        setTimeout(() => {
-            initializeScrollSnap();
-        }, 1200); // Slight delay after scroll lock to ensure proper initialization
-    }// **DYNAMIC CONTROL METHODS** - Call these from browser console to test
+    setTimeout(() => {
+        initializeScrollSnap();
+    }, 1200); // Slight delay after scroll lock to ensure proper initialization// **DYNAMIC CONTROL METHODS** - Call these from browser console to test
     window.controlSmoothScroll = {
         // Change smoothing amount (0-5)
         setSmooth: (value) => {
-            if (smoother) smoother.smooth(value);
+            smoother.smooth(value);
         },
         
         // Get current smooth value
         getSmooth: () => {
-            return smoother ? smoother.smooth() : 0;
+            return smoother.smooth();
         },
         
         // Pause/resume smooth scrolling
         pause: () => {
-            if (smoother) smoother.paused(true);
+            smoother.paused(true);
         },
         
         resume: () => {
-            if (smoother) smoother.paused(false);
+            smoother.paused(false);
         },
         
         // Get current scroll progress (0-1)
         getProgress: () => {
-            return smoother ? smoother.progress : 0;
+            return smoother.progress;
         },
         
         // Get current scroll velocity
         getVelocity: () => {
-            return smoother ? smoother.getVelocity() : 0;
+            return smoother.getVelocity();
         }
     };
     // **ANIMATION CONTROL METHODS** - Control the pop animations
@@ -1583,8 +1459,8 @@ function initializeScrollSnap() {
     function performGentleSnapCheck() {
         if (isSnapping || !scrollSnapEnabled) return;
         
-        const currentScrollTop = smoother.scrollTop();
-        const viewportHeight = window.innerHeight;
+    const currentScrollTop = smoother.scrollTop();
+    const viewportHeight = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
         const scrollPosition = currentScrollTop + (viewportHeight * 0.5); // Middle of viewport
         
         // Find which wrapper section we're closest to using similar logic as bullet navbar
@@ -1713,7 +1589,7 @@ function initializeScrollSnap() {
     });
     
     // **WINDOW RESIZE HANDLER** - Refresh on resize
-    window.addEventListener('resize', localDebounce(() => {
+    window.addEventListener('resize', gsap.utils.debounce(() => {
         ScrollTrigger.refresh();
     }, 250));
     
@@ -1966,22 +1842,6 @@ window.scrollSnapControl = {
     // Function to show final result (can be called later when calculation is complete)
     function showPlantResult(plantName, plantDescription) {
         stopLoadingAnimation();
-        
-        // Mobile-specific: Hide wrapper-5 and show wrapper-6
-        const isMobile = window.innerWidth <= 600;
-        if (isMobile) {
-            const wrapper5 = document.querySelector('.wrapper-5');
-            const wrapper6 = document.querySelector('.wrapper-6');
-            
-            if (wrapper5) {
-                wrapper5.classList.remove('mobile-active');
-            }
-            if (wrapper6) {
-                wrapper6.classList.add('mobile-active');
-                // Scroll to top to ensure user sees the result
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
 
         const loadingContainer = document.querySelector('.loading-container');
         const resultsContainer = document.querySelector('.results-static-container');
@@ -1995,12 +1855,8 @@ window.scrollSnapControl = {
         const plantNameEl = resultsContainer.querySelector('[data-plant]');
         if (plantNameEl) plantNameEl.textContent = plantName;
 
-    // Intentionally do NOT modify the <p data-description> element here.
-    // The paragraph should display the static Blade-rendered message
-    // (e.g., 'Se ha enviado la imagen...'). Keeping JS from overwriting
-    // it ensures consistent UX between email and share flows.
-    // const descEl = resultsContainer.querySelector('[data-description]');
-    // if (descEl) descEl.textContent = plantDescription;
+        const descEl = resultsContainer.querySelector('[data-description]');
+        if (descEl) descEl.textContent = plantDescription;
 
         const imgEl = resultsContainer.querySelector('[data-plant-img]');
         if (imgEl) {
@@ -2429,291 +2285,3 @@ window.scrollSnapControl = {
                 // debug removed
             }
         };
-
-// -------------------------
-// Mobile email modal handlers
-// -------------------------
-// Mobile email modal init (runs immediately if DOM already loaded)
-function initMobileEmailModal() {
-    try {
-        const openBtn = document.getElementById('mobile-open-email-modal');
-        const modal = document.getElementById('mobile-email-modal');
-        const modalClose = modal ? modal.querySelector('.mobile-email-modal-close') : null;
-        const modalCancel = document.getElementById('mobile-email-cancel');
-        const modalEmail = document.getElementById('modal-email');
-        const modalConsent = document.getElementById('modal-send-results-email');
-        const modalSubmit = document.getElementById('mobile-email-submit');
-        const originalEmail = document.getElementById('result-email');
-        const desktopConsent = document.getElementById('send-results-email');
-
-        if (!modal) return;
-
-    // Ensure modal is hidden by default (safety in case markup/CSS not applied yet)
-    // Use unconditional assignment to avoid situations where CSS or prior scripts
-    // may have toggled display before this init runs.
-    try { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); } catch(e) {}
-
-        function openModal() {
-            if (!modal) return;
-            modal.style.display = 'block';
-            // Allow next paint then remove aria-hidden
-            requestAnimationFrame(() => {
-                modal.setAttribute('aria-hidden', 'false');
-                modal.classList.add('open');
-                // prevent background scroll
-                document.documentElement.style.overflow = 'hidden';
-                // focus input after paint without causing browser to scroll unexpectedly.
-                // Use preventScroll:true where supported and fall back to silent focus.
-                setTimeout(() => {
-                    if (!modalEmail) return;
-                    try {
-                        // prefer preventScroll to avoid jumping the viewport on open
-                        modalEmail.focus({ preventScroll: true });
-                    } catch (e) {
-                        // If preventScroll not supported, call focus but try to restore scroll position immediately
-                        const prevScroll = window.scrollY || document.documentElement.scrollTop || 0;
-                        modalEmail.focus();
-                        window.scrollTo(0, prevScroll);
-                    }
-                }, 50);
-            });
-        }
-
-        function closeModal() {
-            if (!modal) return;
-            try {
-                // If any element inside the modal has focus, move focus back to the opener before hiding
-                if (document.activeElement && modal.contains(document.activeElement)) {
-                    try { document.activeElement.blur(); } catch (e) { /* ignore */ }
-                    if (openBtn) {
-                        try { openBtn.focus(); } catch (e) { /* ignore */ }
-                    } else {
-                        // fallback focus to body
-                        try { document.body.focus(); } catch (e) {}
-                    }
-                }
-            } catch (e) {}
-
-            modal.classList.remove('open');
-            // hide from assistive tech only after focus moved
-            modal.setAttribute('aria-hidden', 'true');
-            // restore scroll
-            document.documentElement.style.overflow = '';
-            setTimeout(() => { try { modal.style.display = 'none'; } catch(e){} }, 220);
-        }
-
-        if (openBtn) {
-            openBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                openModal();
-            });
-        }
-
-        if (modalClose) modalClose.addEventListener('click', function(e){ e.preventDefault(); closeModal(); });
-        if (modalCancel) modalCancel.addEventListener('click', function(e){ e.preventDefault(); closeModal(); });
-
-        // backdrop click closes
-        modal.addEventListener('click', function(e){
-            if (e.target === modal || e.target.classList.contains('mobile-email-modal-backdrop')) {
-                closeModal();
-            }
-        });
-
-        if (modalSubmit) {
-            modalSubmit.addEventListener('click', function(e) {
-                e.preventDefault();
-                const email = modalEmail ? modalEmail.value.trim() : '';
-                const consent = modalConsent ? modalConsent.checked : true;
-
-                // Basic email validation: must be present and look like an email
-                if (!email) {
-                    showValidationErrors(['Correo electrónico']);
-                    if (modalEmail) modalEmail.focus();
-                    return;
-                }
-                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!re.test(email)) {
-                    showValidationErrors(['Correo electrónico (formato inválido)']);
-                    if (modalEmail) modalEmail.focus();
-                    return;
-                }
-
-                // Copy values to the original desktop fields (so the rest of the flow can use them)
-                if (originalEmail) originalEmail.value = email;
-                if (desktopConsent) desktopConsent.checked = !!consent;
-
-                // Close modal and proceed
-                closeModal();
-
-                // Proceed with existing flow
-                // Small delay to allow focusout and smoother restore to complete
-                try {
-                    setTimeout(function() {
-                        try { unlockAndScrollToNext(); } catch (err) { console.warn('unlockAndScrollToNext not available', err); }
-                    }, 150);
-                } catch (err) {
-                    console.warn('Failed to schedule unlockAndScrollToNext', err);
-                }
-            });
-        }
-    } catch (err) {
-        console.warn('Mobile email modal init failed', err);
-    }
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMobileEmailModal);
-} else {
-    // DOM already loaded — init immediately
-    initMobileEmailModal();
-}
-
-// Prevent unwanted automatic scrolling to internal sections on page load (mobile)
-// Some browsers or 3rd-party scripts may trigger a scroll during initialization.
-// If there's no explicit hash in the URL, force the viewport to the top after load
-// to avoid landing in the middle of the flow (e.g., section-4) unexpectedly.
-window.addEventListener('load', function() {
-    try {
-        if (location.hash && location.hash.length > 1) return; // respect explicit anchors
-        if (window.innerWidth > 600) return; // only apply on phones as reported
-
-        // Small timeout to let other onload handlers finish
-        setTimeout(() => {
-            const smoother = (window.ScrollSmoother && typeof ScrollSmoother.get === 'function') ? ScrollSmoother.get() : null;
-            if (smoother) {
-                try {
-                    // Use smoother.scrollTo if available (no animation)
-                    smoother.scrollTo(0, false);
-                    // ensure it's paused on mobile as intended
-                    smoother.paused(true);
-                } catch (e) {
-                    // fallback to window scroll
-                    window.scrollTo(0, 0);
-                }
-            } else {
-                window.scrollTo(0, 0);
-            }
-        }, 120);
-    } catch (e) {
-        // swallow errors - not critical
-    }
-});
-
-// -------------------------
-// Plantscan mobile debug & soft-mitigation
-// Opt-in debugging: enable by adding `?plantscanDebug=1` to the URL or
-// by setting `localStorage.setItem('plantscan-debug', '1')` in the console.
-// This block does two things:
-// 1) Tracks focusin/focusout on form controls and optionally logs calls to
-//    window.scrollTo / element.scrollIntoView / ScrollSmoother.scrollTo so
-//    you can see what code runs immediately after focus (likely culprit).
-// 2) As a temporary mitigation, while an input is focused it temporarily
-//    replaces ScrollSmoother.scrollTo with a no-op to prevent programmatic
-//    smooth-scrolling from stealing focus and dismissing the mobile keyboard.
-//    This is intentionally conservative and restored shortly after blur.
-(function(){
-    const debug = /[?&]plantscanDebug=1/.test(location.search) || localStorage.getItem('plantscan-debug') === '1';
-
-    // Public flag for other scripts/tests
-    window.__ps_inputFocused = false;
-
-    let origSmootherScrollTo = null;
-    let smootherBlocked = false;
-
-    function tryGetSmoother() {
-        try { return (window.ScrollSmoother && typeof ScrollSmoother.get === 'function') ? ScrollSmoother.get() : null; } catch (e) { return null; }
-    }
-
-    function blockSmootherScrollTo() {
-        try {
-            const s = tryGetSmoother();
-            if (!s || smootherBlocked) return;
-            if (typeof s.scrollTo === 'function') {
-                origSmootherScrollTo = s.scrollTo.bind(s);
-                s.scrollTo = function() { if (debug) console.log('[PS DEBUG] blocked ScrollSmoother.scrollTo while input focused', arguments); };
-                s.__ps_blocked = true;
-                smootherBlocked = true;
-                if (debug) console.log('[PS DEBUG] ScrollSmoother.scrollTo blocked');
-            }
-        } catch (e) { if (debug) console.warn('[PS DEBUG] blockSmootherScrollTo failed', e); }
-    }
-
-    function restoreSmootherScrollTo() {
-        try {
-            const s = tryGetSmoother();
-            if (!s || !s.__ps_blocked) return;
-            if (origSmootherScrollTo) {
-                s.scrollTo = origSmootherScrollTo;
-            }
-            s.__ps_blocked = false;
-            origSmootherScrollTo = null;
-            smootherBlocked = false;
-            if (debug) console.log('[PS DEBUG] ScrollSmoother.scrollTo restored');
-        } catch (e) { if (debug) console.warn('[PS DEBUG] restoreSmootherScrollTo failed', e); }
-    }
-
-    // Track focus state and apply temporary mitigation
-    document.addEventListener('focusin', function(e) {
-        try {
-            const t = e.target;
-            if (!t) return;
-            const tag = (t.tagName || '').toUpperCase();
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t.isContentEditable) {
-                window.__ps_inputFocused = true;
-                if (debug) console.log('[PS DEBUG] focusin on', t, { tag });
-                // Block smoother scroll actions while user is interacting
-                blockSmootherScrollTo();
-            }
-        } catch (err) { if (debug) console.warn('[PS DEBUG] focusin handler error', err); }
-    }, true);
-
-    document.addEventListener('focusout', function(e) {
-        try {
-            const t = e.target;
-            if (!t) return;
-            const tag = (t.tagName || '').toUpperCase();
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t.isContentEditable) {
-                // Delay restore slightly to avoid race with immediate programmatic scrolls
-                window.__ps_inputFocused = false;
-                if (debug) console.log('[PS DEBUG] focusout on', t, { tag });
-                setTimeout(restoreSmootherScrollTo, 50);
-            }
-        } catch (err) { if (debug) console.warn('[PS DEBUG] focusout handler error', err); }
-    }, true);
-
-    if (debug) {
-        // Lightweight logging wrappers to capture calls that can blur inputs
-        try {
-            const origWindowScrollTo = window.scrollTo.bind(window);
-            window.scrollTo = function() {
-                console.log('[PS DEBUG] window.scrollTo called', arguments, new Error().stack);
-                return origWindowScrollTo.apply(this, arguments);
-            };
-        } catch (e) { console.warn('[PS DEBUG] failed to wrap window.scrollTo', e); }
-
-        try {
-            const origScrollIntoView = Element.prototype.scrollIntoView;
-            Element.prototype.scrollIntoView = function() {
-                console.log('[PS DEBUG] element.scrollIntoView called', this, arguments, new Error().stack);
-                return origScrollIntoView.apply(this, arguments);
-            };
-        } catch (e) { console.warn('[PS DEBUG] failed to wrap Element.prototype.scrollIntoView', e); }
-
-        // Attempt to wrap ScrollSmoother.scrollTo to log calls too
-        function wrapSmootherLogger() {
-            try {
-                const s = tryGetSmoother();
-                if (s && typeof s.scrollTo === 'function' && !s.__ps_logged) {
-                    const original = s.scrollTo.bind(s);
-                    s.scrollTo = function() { console.log('[PS DEBUG] ScrollSmoother.scrollTo called', arguments, new Error().stack); return original.apply(this, arguments); };
-                    s.__ps_logged = true;
-                }
-            } catch (e) { console.warn('[PS DEBUG] wrapSmootherLogger failed', e); }
-        }
-
-        window.addEventListener('load', wrapSmootherLogger);
-        setTimeout(wrapSmootherLogger, 800);
-
-        console.log('[PS DEBUG] plantscan debug enabled — use ?plantscanDebug=1 or localStorage.plantscan-debug=1');
-    }
-})();

@@ -1,3 +1,75 @@
+Aurora Pets
+
+Aurora Pets is a small Laravel-based web application for plant and pet care profiles, quizzes (PlantScan), and user-managed care recommendations. It combines server-side Blade views with GSAP-powered frontend interactions for a smooth multi-section mobile experience.
+
+This repository contains the full application sources (backend + frontend assets) used in development.
+
+## Features
+
+- Multi-section PlantScan flow with GSAP ScrollTrigger/ScrollSmoother animations and mobile fallbacks
+- Digital profiles for pets and plants (CRUD via Eloquent models)
+- Email generation for PlantScan results and OG image generation job
+- Admin pages for managing plants, pets and users
+
+## Tech stack
+
+- PHP 8.2+ and Laravel
+- Blade templating
+- GSAP (ScrollTrigger, ScrollSmoother) for advanced scrolling/animations
+- Vanilla JS for progressive behavior and mobile fixes
+- npm/Vite for frontend asset building
+
+## Quick start (development)
+
+1. Install PHP and Composer, Node.js and npm.
+2. From project root:
+
+```powershell
+composer install
+cp .env.example .env
+php artisan key:generate
+npm install
+npm run build # or `npm run dev` for local hot rebuild
+php artisan serve --host=127.0.0.1 --port=8000
+# then open http://127.0.0.1:8000
+```
+
+3. If you use a database, update `.env` with DB credentials and run migrations:
+
+```powershell
+php artisan migrate --seed
+```
+
+## Mobile viewport & PlantScan notes
+
+The PlantScan flow uses full-viewport stacked sections and GSAP pinning. Mobile browsers that hide/show the address/menu bar can change the viewport height and make pinned sections appear to "drop". To mitigate this the project includes two safeguards in `public/js/prevention.js`:
+
+- Prefer using the Visual Viewport API to compute the CSS `--vh` variable on mobile and refresh GSAP calculations when the visual viewport changes.
+- An optional, feature-flagged helper to disable native scrolling on mobile and drive navigation with buttons. Toggle the behavior with the variable `MOBILE_DISABLE_NATIVE_SCROLL_ENABLED` in `public/js/prevention.js`.
+
+Please test on iOS Safari and Android Chrome when evaluating mobile behavior.
+
+## Large assets / Git LFS
+
+This repository contains several large image assets. GitHub may warn about files >50MB. Consider using Git LFS for these files:
+
+- https://git-lfs.github.com/
+
+If you want, add Git LFS tracking for image types used in `public/assets` (e.g. `git lfs track "public/assets/**/*.png"`) and re-push.
+
+## Contributing
+
+1. Fork and create a feature branch.
+2. Make changes and run tests (if any).
+3. Open a PR with a clear description.
+
+## License
+
+MIT
+
+---
+
+Bienvenido a Aurora Pets — si quieres que deje el README en español completo o que añada ejemplos de endpoints, dímelo y lo actualizo.
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

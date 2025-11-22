@@ -46,6 +46,13 @@
 @endpush
 
 @section('content')
+    <style>
+        /* Hide specific sub-labels on small screens (phones) */
+        @media (max-width: 600px) {
+            .hide-on-mobile { display: none !important; }
+        }
+    </style>
+
     <nav class="bullet-navbar">
         <h3 class="bullet-label"></h3>
         <ul>
@@ -68,16 +75,13 @@
                             <img src="./assets/plantscan/imgs/logo.png" alt="">
                         </div>                        
                         <div class="title">
-                            <h1 data-nav-title="01. Bienvenid@">
-                                <img src="{{ asset('assets/plantscan-logo.png') }}" alt="PlantScan" class="plantscan-header-logo" />
-                                <span class="sr-only">PlantScan</span>
-                            </h1>
+                            <h1 data-nav-title="01. Bienvenid@">PlantScan</h1>
                         </div>
                         <div class="paragraph">
                             <p>Cada mascota tiene una planta que la representa.<br>¿Cuál es la tuya?</p>
                         </div>
                         <div class="cta-buttons">
-                            <a href="#" onclick="scrollToSection(2); return false;" class="btn btn-primary" id="start-button">Comenzar</a>
+                            <a href="#" onclick="scrollToSection(2); return false;" class="btn btn-primary">Comenzar</a>
                         </div>
 
                     </div>
@@ -162,9 +166,7 @@
                                             document.fonts.load('32px "Buenard"'),
                                             document.fonts.load('bold 80px "Playfair Display"'),
                                             document.fonts.load('bold 42px "Playfair Display"'),
-                                            document.fonts.load('36px "Buenard"'),
-                                            // Ensure Chunkfive is available for pet name rendering (declared in aurora-general.css)
-                                            document.fonts.load('56px "Chunkfive"')
+                                            document.fonts.load('36px "Buenard"')
                                         ]);
                                     } catch (e) {
                                         console.warn('Font loading failed, using fallbacks:', e);
@@ -183,113 +185,57 @@
                                     const img = new Image();
                                     img.crossOrigin = 'anonymous';
                                     img.onload = function() {
-                                        // Prepare top logo image (we'll draw it as an overlay on top of the plant)
-                                        const topLogo = new Image();
-                                        topLogo.crossOrigin = 'anonymous';
-                                        // Attach onload before assigning src so cached loads don't miss the handler
-                                        topLogo.onload = function() {
-                                            const topLogoWidth = 450; // requested width
-                                            const topLogoHeight = (topLogo.height / topLogo.width) * topLogoWidth;
-                                            // Place the logo centered over the plant image top edge (overlapping)
-                                            const topLogoX = imgX - 50;
-                                            const topLogoY = imgY - 120; // small overlap into the plant image
-
-                                            // Rotate around the logo center by -10 degrees (CCW)
-                                            const centerX = topLogoX + topLogoWidth / 2;
-                                            const centerY = topLogoY + topLogoHeight / 2;
-                                            const angle = -10 * Math.PI / 180; // radians
-
-                                            ctx.save();
-                                            ctx.translate(centerX, centerY);
-                                            ctx.rotate(angle);
-                                            // drawImage with center at origin after translate
-                                            ctx.drawImage(topLogo, -topLogoWidth / 2, -topLogoHeight / 2, topLogoWidth, topLogoHeight);
-                                            ctx.restore();
-                                        };
-                                        topLogo.onerror = function() {
-                                            // If logo fails, skip — we intentionally removed the title text
-                                            console.warn('Top logo failed to load');
-                                        };
-                                        // Use Blade asset() to generate an absolute URL and avoid relative-path issues
-                                        topLogo.src = '{{ asset("assets/plantscan-logo.png") }}';
+                                        // Top title: "¡La planta perfecta para [pet name]!"
+                                        ctx.fillStyle = '#fe8d2c'; // var(--color-1) - orange
+                                        ctx.font = 'bold 64px "Playfair Display", Georgia, serif';
+                                        ctx.textAlign = 'center';
+                                        
+                                        // Wrap title text if needed
+                                        const titleText = `¡La planta perfecta para ${data.petName}!`;
+                                        const maxWidth = 900;
+                                        const words = titleText.split(' ');
+                                        let line = '';
+                                        let y = 150; // Reduced from 280 to 150 for more compact top
+                                        const lineHeight = 75;
+                                        
+                                        for (let word of words) {
+                                            const testLine = line + word + ' ';
+                                            const metrics = ctx.measureText(testLine);
+                                            if (metrics.width > maxWidth && line !== '') {
+                                                ctx.fillText(line.trim(), 540, y);
+                                                line = word + ' ';
+                                                y += lineHeight;
+                                            } else {
+                                                line = testLine;
+                                            }
+                                        }
+                                        ctx.fillText(line.trim(), 540, y);
 
                                         // Plant image (3:4 aspect ratio, centered)
-                                        // Reduce width by 30px as requested and keep aspect ratio
-                                        const imgWidth = 600 - 30; // 570px (30px less wide)
-                                        const imgHeight = Math.round(imgWidth * 4 / 3); // maintain 3:4 ratio
+                                        const imgWidth = 600;
+                                        const imgHeight = 800; // 3:4 ratio
                                         const imgX = (1080 - imgWidth) / 2;
-                                        const imgY = 200; // same vertical placement as before
-
+                                        const imgY = 230; // Reduced from 500 to 230 (moved up even more)
+                                        
                                         // Draw plant image
                                         ctx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
 
-                                        // Draw border around plant image: 10px using var(--color-3) equivalent
-                                        // var(--color-3) used elsewhere corresponds to light green '#dcffd6'
-                                        ctx.lineWidth = 10;
-                                        ctx.strokeStyle = '#dcffd6';
-                                        // Offset the stroke so the border sits outside the image
-                                        ctx.strokeRect(imgX - (ctx.lineWidth/2), imgY - (ctx.lineWidth/2), imgWidth + ctx.lineWidth, imgHeight + ctx.lineWidth);
-
-                                        // Draw the top logo as an absolute overlay on the plant image so it can sit on top
-                                        // (drawing is handled by the topLogo.onload handler attached earlier)
-
-                                        // Grid above plant name: two-column layout
-                                        // Left column: pet's name (one row)
-                                        // Right column: two rows (birthday, inspirations)
-                                        // Try to get birthday and inspirations from data; fallback to DOM when available
-                                        let petBirthday = data.birthday || '';
-                                        if (!petBirthday) {
-                                            const bEl = document.getElementById('pet-birthday');
-                                            if (bEl && bEl.value) petBirthday = bEl.value;
-                                        }
-
-                                        let inspirations = data.inspirations || '';
-                                        if (!inspirations) {
-                                            const inspEls = Array.from(document.querySelectorAll('input[name="inspiration"]:checked'));
-                                            inspirations = inspEls.map(e => e.value).join(', ');
-                                        }
-
-                                        // Simplified layout: pet name centered below plant image, virtues below it separated by ' - '
-                                        const gridTopY = imgY + imgHeight + 20; // keep existing vertical offset
-
-                                        // Pet name centered at the same Y it previously used (gridTopY + 5)
-                                        const petNameY = gridTopY + 15;
-                                        ctx.fillStyle = '#fe8d2c'; // orange
-                                        // Use Chunkfive for pet name (fall back to Playfair/Georgia if not available)
-                                        ctx.font = '56px "Chunkfive", "Playfair Display", Georgia, serif';
-                                        ctx.textAlign = 'center';
-                                        ctx.textBaseline = 'top';
-                                        ctx.fillText(data.petName || 'tu mascota', 540, petNameY);
-
-                                        // Virtues (inspirations) below the pet name, joined with ' - '
-                                        const virtues = (inspirations || '').trim();
-                                        if (virtues) {
-                                            ctx.fillStyle = '#dcffd6';
-                                            ctx.font = '28px "Buenard", Georgia, serif';
-                                            ctx.textAlign = 'center';
-                                            ctx.fillText(virtues.split(',').map(s => s.trim()).join(' - '), 540, petNameY + 70);
-                                        }
-
-                                        // Place the plant name below virtues (keep similar spacing as before)
-                                        const plantNameY = petNameY + 44 + 75; // virtues line + small gap
-                                        ctx.fillStyle = '#fe8d2c'; // orange
+                                        // Plant name below image
+                                        ctx.fillStyle = '#fe8d2c'; // var(--color-1) - orange
                                         ctx.font = 'bold 80px "Playfair Display", Georgia, serif';
-                                        ctx.textAlign = 'center';
-                                        ctx.fillText(data.plantName, 540, plantNameY);
+                                        ctx.fillText(data.plantName, 540, imgY + imgHeight + 100);
 
                                         // Plant description (smaller, wrapped text)
                                         ctx.fillStyle = '#dcffd6'; // var(--color-3) - light green
-                                        // Reduced font size from 32px -> 28px to fit more text
-                                        ctx.font = '28px "Buenard", Georgia, serif';
+                                        ctx.font = '32px "Buenard", Georgia, serif';
                                         const descMaxWidth = 800;
-                                        const descWords = (data.description || '').split(' ');
+                                        const descWords = data.description.split(' ');
                                         let descLine = '';
-                                        let descY = gridTopY + 230;
-                                        // Slightly reduced line-height to match smaller font
-                                        const descLineHeight = 36;
+                                        let descY = imgY + imgHeight + 180;
+                                        const descLineHeight = 42;
                                         let lineCount = 0;
                                         const maxLines = 3;
-
+                                        
                                         for (let word of descWords) {
                                             if (lineCount >= maxLines) break;
                                             const testLine = descLine + word + ' ';
@@ -304,8 +250,7 @@
                                             }
                                         }
                                         if (lineCount < maxLines && descLine.trim()) {
-                                            // Do not append ellipsis when truncating; print final allowed line as-is
-                                            ctx.fillText(descLine.trim(), 540, descY);
+                                            ctx.fillText(descLine.trim() + (lineCount === maxLines - 1 ? '...' : ''), 540, descY);
                                         }
 
                                         // Bottom: Aurora logo (replacing "Aurora Pets" text)
@@ -316,7 +261,7 @@
                                             const logoWidth = 300; // Adjust size as needed
                                             const logoHeight = (logo.height / logo.width) * logoWidth; // Maintain aspect ratio
                                             const logoX = (1080 - logoWidth) / 2;
-                                            const logoY = 1375; // Adjusted for shorter canvas height
+                                            const logoY = 1360; // Adjusted for shorter canvas height
                                             
                                             ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
                                             
@@ -372,20 +317,6 @@
                                 try {
                                     showToast('Generando imagen...');
                                     
-                                    // Ensure the description is sourced from the DB (do not rely on DOM-embedded defaults)
-                                    try {
-                                        if (!data.description || !data.description.trim()) {
-                                            const resp = await fetch(`/plants/description?name=${encodeURIComponent(data.plantName)}`);
-                                            if (resp && resp.ok) {
-                                                const j = await resp.json();
-                                                if (j && j.description) data.description = j.description;
-                                            }
-                                        }
-                                    } catch (e) {
-                                        // network or server error -> fall back to DOM-provided description
-                                        console.warn('Failed to fetch plant description for share flow, using page text fallback', e);
-                                    }
-
                                     const { blob, dataUrl } = await generateStoryImage(data);
                                     const fileName = `${data.petName}-${data.plantName}-Aurora.png`.replace(/\s+/g, '-');
 
@@ -405,36 +336,17 @@
                                         }
                                     }
 
-                                    // Fallback: create a blob URL and open/download it without navigating away
-                                    try {
-                                        const objectUrl = URL.createObjectURL(blob);
-                                        const link = document.createElement('a');
-                                        link.href = objectUrl;
-                                        link.download = fileName;
-                                        // Open in a new tab/window where some mobile browsers will show the image
-                                        // without navigating away from the results page
-                                        link.target = '_blank';
-                                        link.rel = 'noopener noreferrer';
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                        // Revoke the object URL after a delay to ensure the browser has time to load it
-                                        setTimeout(() => { try { URL.revokeObjectURL(objectUrl); } catch (e) {} }, 60000);
-
-                                        const platformNames = {
-                                            'instagram': 'Instagram',
-                                            'tiktok': 'TikTok',
-                                            'facebook': 'Facebook',
-                                            'x': 'Twitter/X'
-                                        };
-                                        const platformName = platformNames[platform] || 'redes sociales';
-                                        showToast(`Imagen lista. Súbela a ${platformName} para compartir.`);
-                                    } catch (err) {
-                                        // Last-resort fallback to data URL download (may navigate on some browsers)
-                                        console.warn('Object URL download failed, falling back to data URL', err);
-                                        downloadImage(dataUrl, fileName);
-                                        showToast('Imagen descargada. Súbela manualmente.');
-                                    }
+                                    // Fallback: Download image
+                                    downloadImage(dataUrl, fileName);
+                                    
+                                    const platformNames = {
+                                        'instagram': 'Instagram',
+                                        'tiktok': 'TikTok',
+                                        'facebook': 'Facebook',
+                                        'x': 'Twitter/X'
+                                    };
+                                    const platformName = platformNames[platform] || 'redes sociales';
+                                    showToast(`Imagen descargada. Súbela a ${platformName} para compartir.`);
                                     
                                 } catch (error) {
                                     console.error('Share error:', error);
@@ -491,15 +403,15 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Sexo:</label>
+                                <label>Género:</label>
                                 <div class="radio-group">
                                     <label class="radio-label">
                                         <input type="radio" name="gender" value="masculino" required>
-                                        <span>Macho</span>
+                                        <span>Masculino</span>
                                     </label>
                                     <label class="radio-label">
                                         <input type="radio" name="gender" value="femenino" required>
-                                        <span>Hembra</span>
+                                        <span>Femenino</span>
                                     </label>
                                 </div>
                             </div>
@@ -552,7 +464,7 @@
 
                             <div class="form-group full-width">
                                 <label class="color-label">Color de mascota:</label>
-                                <p class="sub-label">Elige hasta tres colores que mejor describan a tu mascota:</p>
+                                <p class="sub-label hide-on-mobile">Elige hasta tres colores que mejor describan a tu mascota:</p>
                                 <div class="checkbox-group color-options">
                                     <label class="checkbox-label">
                                         <input type="checkbox" name="color" value="rojo">
@@ -637,7 +549,7 @@
                         <form class="environment-form">
                             <div class="form-group full-width">
                                 <label>¿Cómo es el lugar donde comparten sus días?</label>
-                                <p class="sub-label">¿Viven juntos en un espacio como...?</p>
+                                <p class="sub-label hide-on-mobile">¿Viven juntos en un espacio como...?</p>
                                 <div class="radio-group">
                                     <label class="radio-label">
                                         <input type="radio" name="living-space" value="casa-jardin" required>
@@ -734,8 +646,17 @@
                                 </div>
                                 <!-- Mobile-only CTA placed immediately after inspiration for small screens -->
                                 <div class="mobile-only mobile-cta-wrapper">
-                                    <!-- On mobile we don't show the email inline; instead the button opens a small modal for the email -->
-                                    <a href="#" id="mobile-open-email-modal" class="btn btn-primary mobile-cta">Continuar</a>
+                                    <div class="mobile-email-row">
+                                        <label for="mobile-result-email" class="sr-only">Correo electrónico (móvil)</label>
+                                        <input id="mobile-result-email" name="mobile-result-email" type="email" placeholder="Email: correo@ejemplo.com" aria-label="Tu correo electrónico" class="mobile-email-input" />
+                                    </div>
+                                    <div class="mobile-email-row">
+                                        <label class="email-consent-label mobile-consent">
+                                            <input type="checkbox" id="mobile-send-results-email" name="mobile-send-results-email" checked />
+                                            <span>Recibir resultado con imagen por correo</span>
+                                        </label>
+                                    </div>
+                                    <a href="#" onclick="unlockAndScrollToNext(); return false;" class="btn btn-primary mobile-cta">Calcular</a>
                                 </div>
                             </div>
                         </form>
@@ -817,7 +738,7 @@
                                 <img alt="Imagen de planta" data-plant-img src="./assets/plantscan/imgs/plants/schefflera.png">
                             </div>
                             <h3 class="plant-name" data-plant>Schefflera</h3>
-                            <p>Se ha enviado la imagen del resultado a tu correo. También puedes descargarla haciendo clic en los iconos de compartir y redes sociales.</p>
+                            <p class="plant-description" data-description>Completa el cuestionario para ver la planta que mejor representa a tu mascota. Aquí verás una descripción cuando termines.</p>
 
                             <!-- (Email & social moved to bottom of results container) -->
                         </div>
@@ -850,28 +771,6 @@
     </div>
 
     <div class="background-wrapper">
-    </div>
-
-    <!-- Mobile-only email modal (will only be visible on phones via CSS) -->
-    <div id="mobile-email-modal" class="mobile-only mobile-email-modal" aria-hidden="true" role="dialog" aria-modal="true" style="display: none;">
-        <div class="mobile-email-modal-backdrop" aria-hidden="true"></div>
-        <div class="mobile-email-modal-content" role="document">
-            <button type="button" class="mobile-email-modal-close" aria-label="Cerrar">×</button>
-            <form id="mobile-email-form" onsubmit="return false;">
-                <label for="modal-email" class="sr-only">Correo electrónico</label>
-                <input id="modal-email" name="modal-email" type="email" placeholder="Email: correo@ejemplo.com" aria-label="Tu correo electrónico" class="mobile-email-input" />
-                <div style="margin-top:0.6rem; margin-bottom:1rem;">
-                    <label class="email-consent-label mobile-consent">
-                        <input type="checkbox" id="modal-send-results-email" name="modal-send-results-email" checked />
-                        <span>Recibir resultado con imagen por correo</span>
-                    </label>
-                </div>
-                <div style="display:flex; gap:0.6rem;">
-                    <button id="mobile-email-submit" class="btn btn-primary" type="button">Calcular</button>
-                    <button id="mobile-email-cancel" class="btn" type="button">Cancelar</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <script>
@@ -996,37 +895,4 @@
 
 @push('scripts')
     <script src="./js/prevention.js"></script>
-    <script>
-    // Ensure the visible results paragraph stays the Blade-provided static message.
-    // Some client-side flows may read from this element; we intentionally force its
-    // displayed text to the static instruction so users always see the expected copy.
-    (function(){
-        function restoreStaticDescription() {
-            try {
-                const el = document.querySelector('.plant-description[data-description]');
-                if (!el) return;
-                const staticText = 'Se ha enviado la imagen del resultado a tu correo. También puedes descargarla haciendo clic en los iconos de compartir y redes sociales.';
-                // Only update if it's different to avoid unnecessary DOM writes
-                if (el.textContent.trim() !== staticText) {
-                    el.textContent = staticText;
-                }
-                // Mark as locked so other scripts can check if needed
-                el.setAttribute('data-locked', '1');
-            } catch (e) {
-                // silent
-            }
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', restoreStaticDescription);
-        } else {
-            // DOM already ready
-            restoreStaticDescription();
-        }
-
-        // Also guard against later accidental overwrites by re-applying once more
-        // after a short delay (covers scripts that run after DOMContentLoaded)
-        setTimeout(restoreStaticDescription, 900);
-    })();
-    </script>
 @endpush

@@ -20,6 +20,9 @@ Route::get('/plantscan', function () {
     return view('plantscan');
 });
 
+// Public API: fetch plant description by name or slug
+Route::get('/plants/description', [App\Http\Controllers\PlantDescriptionController::class, 'show']);
+
 // Simple demo page (home2) with fullscreen video and sections
 Route::get('/home2', function () {
     return view('home2');
@@ -76,6 +79,11 @@ Route::middleware([EnsureAdmin::class])->group(function () {
     Route::get('/admin/plants/{id}/edit', [PlantController::class, 'edit'])->name('admin.plants.edit');
     Route::post('/admin/plants/{id}/update', [PlantController::class, 'update'])->name('admin.plants.update');
     Route::post('/admin/plants/{id}/delete-photo', [PlantController::class, 'deletePhoto'])->name('admin.plants.deletePhoto');
+
+    // Admin image generator (MVP)
+    Route::get('/admin/images/generator', [\App\Http\Controllers\Admin\ImageGeneratorController::class, 'index'])->name('admin.images.generator');
+    Route::post('/admin/images/generator/upload', [\App\Http\Controllers\Admin\ImageGeneratorController::class, 'upload'])->name('admin.images.upload');
+    Route::post('/admin/images/generator/server', [\App\Http\Controllers\Admin\ImageGeneratorController::class, 'server'])->name('admin.images.server');
     
     // User management
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users');

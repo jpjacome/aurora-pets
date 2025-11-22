@@ -70,6 +70,6 @@
     </table>
 
     <div class="pagination">
-        {{ $tests->links() }}
+        {{ $tests->links('vendor.pagination.admin') }}
     </div>
 @endsection

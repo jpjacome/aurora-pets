@@ -19,7 +19,7 @@
     @if($errors->any())
         <div class="alert alert-error">
             <i class="ph ph-warning-circle"></i>
-            <ul style="margin: 0.5rem 0 0 0; padding-left: 1.5rem;">
+            <ul class="errors-list">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -27,19 +27,30 @@
         </div>
     @endif
 
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
-        <h1 style="margin: 0;">Plants</h1>
+    <div class="plants-header">
+        <h1>Plants</h1>
         
         <!-- Control Panel -->
-        <div style="display: flex; gap: 1rem; align-items: center;">
+        <div class="plants-controls">
             <button 
                 id="addPlantBtn" 
                 class="icon-btn icon-btn-primary" 
                 title="Add New Plant"
                 onclick="openAddPlantModal()"
             >
-                <i class="ph ph-plus-circle" style="font-size: 1.5rem;"></i>
+                <i class="ph ph-plus-circle icon-lg"></i>
             </button>
+
+            <!-- Plantscan Image Generator Link -->
+            <a 
+                id="openImageGeneratorBtn"
+                class="icon-btn icon-btn-secondary icon-btn-inline"
+                href="/admin/images/generator"
+                title="Generate PlantScan Image"
+            >
+                <i class="ph ph-camera icon-md"></i>
+            </a>
+
             <button 
                 id="deleteSelectedBtn" 
                 class="icon-btn icon-btn-danger" 
@@ -47,7 +58,7 @@
                 onclick="deleteSelectedPlants()"
                 disabled
             >
-                <i class="ph ph-trash" style="font-size: 1.5rem;"></i>
+                <i class="ph ph-trash icon-lg"></i>
             </button>
         </div>
     </div>
@@ -66,7 +77,7 @@
                     <option value="100" {{ request('perPage')==100? 'selected':'' }}>100</option>
                     <option value="all" {{ request('perPage')=='all'? 'selected':'' }}>All</option>
                 </select>
-                <button type="submit">Search</button>
+                <button class="admin-toolbar-search" type="submit">Search</button>
             </form>
         </div>
     </div>
@@ -83,8 +94,8 @@
                 >
                 
                 <div class="plant-card-header">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                        <strong style="font-size: 1.1rem;">{{ $plant->plant_type == 'Con flor' ? '�' : '�🌿' }} {{ $plant->name }}</strong>
+                    <div class="plant-card-meta">
+                            <strong class="plant-name">{{ $plant->plant_type == 'Con flor' ? '�' : '�🌿' }} {{ $plant->name }}</strong>
                         @if(!$plant->is_active)
                             <span class="badge badge-inactive">Inactive</span>
                         @endif
@@ -109,33 +120,7 @@
                     @endif
                 </div>
 
-                @if($plant->substrate_info || $plant->lighting_info || $plant->watering_info)
-                    <hr class="plant-hr">
-                    <div class="plant-care-info">
-                        <strong style="color: var(--aurora-green); margin-bottom: 0.5rem; display: block;">Care Information:</strong>
-                        
-                        @if($plant->substrate_info)
-                            <div class="care-item">
-                                <i class="ph ph-flower" style="color: #8B4513;"></i>
-                                <span>{{ Str::limit($plant->substrate_info, 80) }}</span>
-                            </div>
-                        @endif
-                        
-                        @if($plant->lighting_info)
-                            <div class="care-item">
-                                <i class="ph ph-sun" style="color: #FFA500;"></i>
-                                <span>{{ Str::limit($plant->lighting_info, 80) }}</span>
-                            </div>
-                        @endif
-                        
-                        @if($plant->watering_info)
-                            <div class="care-item">
-                                <i class="ph ph-drop" style="color: #1E90FF;"></i>
-                                <span>{{ Str::limit($plant->watering_info, 80) }}</span>
-                            </div>
-                        @endif
-                    </div>
-                @endif
+                {{-- Care information removed from plant card display per request --}}
 
                 <div class="plant-card-footer">
                     <small class="muted">Created {{ $plant->created_at->diffForHumans() }}</small>
@@ -159,7 +144,7 @@
             <div class="modal-header">
                 <h2>Add New Plant</h2>
                 <button class="modal-close" onclick="closeAddPlantModal()">
-                    <i class="ph ph-x" style="font-size: 1.5rem;"></i>
+                    <i class="ph ph-x icon-lg"></i>
                 </button>
             </div>
             <form method="POST" action="/admin/plants/create" class="modal-form">

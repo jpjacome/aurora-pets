@@ -11,28 +11,6 @@ body {
     overflow-x: hidden;
 }        
 
-/* Accessibility helper: visually hide text but keep it available to screen readers and SEO */
-.sr-only {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
-    border: 0 !important;
-}
-
-/* Header logo sizing (used inside the H1) */
-.plantscan-header-logo {
-    display: inline-block;
-    width: 410px;
-    max-width: 95%; /* limit size on large screens */
-    height: auto;
-    vertical-align: middle;
-}
-
 
 /* BULLET NAVBAR */
 .bullet-navbar {
@@ -174,7 +152,6 @@ body {
 /* Disable pointer events on bullet navigation for mobile only */
 @media (max-width: 600px) {
     .bullet-navbar {
-        display: none;
         pointer-events: none;
     }
     
@@ -229,22 +206,7 @@ body {
     overflow: hidden;
 }
 
-@media (max-width: 900px) {
-    .wrapper .inner-container{
-        width: 100%!important;
-        height: 100%!important;
-        margin-top: 0!important;
-        padding-top: 2rem!important;
-        border-radius: 0!important;
-    }
-    .wrapper-1 .inner-container{
-        width: 80%!important;
-        height: 80%!important;
-        margin-top: 5rem!important;
-        border-radius: var(--border-radius)!important;
-        padding-top: 0!important;
-    }
-}
+
 /* CONTAINER1 */
 
 
@@ -267,7 +229,7 @@ body {
             height: 100%;
         }  
     .wrapper-1 .inner-container .container-1 .title {
-        margin: 2rem 3rem 1rem;
+        margin: 5rem 3rem 1rem;
         color: var(--color-1);
     }
         .wrapper-1 .inner-container .container-1 .title h1{
@@ -290,12 +252,6 @@ body {
         margin: 0 3rem 1rem;
         flex-wrap: wrap;
         align-items: center;
-    }
-
-    #start-button {
-        padding: 0.9rem 1rem;
-        text-align: center;
-        font-size: calc(1em + 1vw);
     }
 
 /* Section 1 responsiveness */
@@ -339,7 +295,7 @@ body {
         line-height: 1.1;
     }
     .wrapper-1 .inner-container .container-1 .paragraph {
-        margin: 2rem 1.2rem 1.5rem;
+        margin: 1rem 1.2rem 1.5rem;
         text-align: center;
     }
     .cta-buttons { justify-content: center; margin: 0 1.2rem 1.4rem; }
@@ -361,7 +317,9 @@ body {
         max-height: 80px;
     }
     .wrapper-1 .inner-container .container-1 .title h1 { font-size: clamp(1.9rem, 7.5vw, 2.6rem); }
-
+    .wrapper-1 .inner-container .container-1 .paragraph p {
+            font-size: clamp(12px, 1.2rem, 4vw);
+    }
 }
 
 
@@ -942,6 +900,7 @@ body {
 }
 
 
+
 /* CONTAINER3 - PET DETAILS FORM */
 .wrapper-3 .inner-container.wrapper-3-flex {
     display: flex;
@@ -1189,7 +1148,7 @@ body {
         width: calc(100% - 3rem);
         max-width: 400px;
         margin: 1.5rem 1rem;
-        gap: 0.5rem;
+        gap: 1.5rem;
     }
     
     .section-header {
@@ -1417,27 +1376,17 @@ body {
 .mobile-only { display: none; }
 
 /* Chip styles for mobile selections */
-.mobile-chips { 
-    display: flex; 
-    gap: 0.5rem; 
-    flex-wrap: wrap; 
-    margin-top: 0.6rem; 
-}
+.mobile-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
 .mobile-chips .chip {
     background: rgba(255,255,255,0.12);
     border: 1px solid rgba(255,255,255,0.18);
     padding: 0.35rem 0.6rem;
     border-radius: 999px;
     font-size: 0.95rem;
-    color: var(--color-3);
+    color: var(--color-2);
     cursor: pointer;
 }
-.mobile-chips .chip:active { 
-    transform: scale(0.98); 
-}
-#mobile-inspiration-chips .chip{
-    color: var(--color-2);
-}
+.mobile-chips .chip:active { transform: scale(0.98); }
 
 #section-4 h2{
     display: none;
@@ -1525,7 +1474,6 @@ body {
 
 .email-consent-label span {
     line-height: 1.4;
-    color: var(--color-3);
 }
 
 /* Mobile consent checkbox */
@@ -1832,45 +1780,22 @@ body {
 
 /* FINAL RESULT PAGE */
 
-/* Make the inner container a column flexbox and contain the layout.
-   The scrollable area is the .results-static-container so the footer
-   remains visible while results can scroll (matches wrapper-4 behavior). */
+
 .wrapper-6 .inner-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     background-color: var(--color-2);
-    /* contain overflow at the inner layout level - the results pane will scroll */
-    overflow: hidden;
-    /* match other sections: use 80% sizing so content aligns consistently */
-    width: 80%;
-    height: 80%;
-    min-height: 0; /* allow children to shrink and scroll correctly */
-    padding: 2rem 1rem;
-    box-sizing: border-box;
-}
-
-/* The main results area should be the scrollable panel so the footer stays pinned */
-.wrapper-6 .results-static-container {
-    flex: 1 1 auto;
-    min-width: 0; /* prevent overflow due to long children */
-    width: 100%;
-    box-sizing: border-box;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
-    padding-top: 0.5rem;
+    height: 100%;
+    padding: 2rem 1rem;
 }
-
 @media (max-width: 600px){
     .wrapper-6 .inner-container {
         justify-content: flex-start;
         padding: 1rem 0.5rem;
-        width: 100%;
-        height: auto; /* let mobile use natural height and allow inner scrolling */
     }
-    /* On small screens keep the results area scrollable as well */
-    .wrapper-6 .results-static-container { max-height: calc(100vh - 220px); }
 }
 
 .results-static-container {
@@ -1908,13 +1833,11 @@ body {
 
 .plant-name{
     color: var(--color-1);
-    font-size: calc(1.3em + 1.3vw);
 }
 
 .plant-description {
     margin-bottom: 2rem;
     max-width: 400px;
-    font-size: calc(.8em + .5vw);
 }
 
 .plant-img{
@@ -1980,7 +1903,6 @@ body {
     gap: var(--space-md, 16px);
     align-items: center;
     justify-content: center;
-    margin-top: 2rem;
 }
 .results-footer .share-links {
     display: inline-flex;
@@ -2081,39 +2003,4 @@ body {
     .mobile-continue-btn:disabled:active {
         transform: none;
     }
-    .sub-label{
-        display: none;
-    }
-    
-}
-
-/* Mobile-only email modal styles (phones only) */
-@media (max-width: 600px) {
-    .mobile-email-modal { 
-        display: none !important; 
-        position: fixed; inset: 0; 
-        z-index: 1200; }
-    .mobile-email-modal[aria-hidden="false"], .mobile-email-modal.open { display: block !important; }
-    .mobile-email-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.45); }
-    .mobile-email-modal-content { 
-        position: absolute; 
-        left: 50%; 
-        top: 18%; 
-        transform: translateX(-50%); 
-        width: 80vw; 
-        max-width: 420px; 
-        background: var(--color-2); 
-        color: var(--color-1); 
-        border-radius: 14px; 
-        padding: 1rem 1rem 1.25rem; 
-        box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-    }
-    .mobile-email-modal-content input.mobile-email-input { width: 100%; padding: 0.85rem 1rem; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--color-1); font-size: 1rem; box-sizing: border-box; }
-
-    /* Placeholder color: use color-3 variable with vendor fallbacks */
-    .mobile-email-modal-content input.mobile-email-input::placeholder { color: var(--color-3); opacity: 1; }
-    .mobile-email-modal-content input.mobile-email-input::-webkit-input-placeholder { color: var(--color-3); }
-    .mobile-email-modal-content input.mobile-email-input:-ms-input-placeholder { color: var(--color-3); }
-    .mobile-email-modal-close { position: absolute; right: 10px; top: 6px; background: transparent; border: none; color: var(--color-1); font-size: 1.6rem; line-height:1; }
-    .mobile-email-modal .btn { padding: 0.75rem 1rem; border-radius: 10px; }
 }

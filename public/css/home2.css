@@ -218,6 +218,10 @@ header{
         margin-bottom: 2rem;
     }
 
+    #page-2 p{
+        max-width: 750px;
+    }
+
     #page-2 .container{
         position: relative;
         right: 2rem;
@@ -252,7 +256,7 @@ header{
 
 
 .bg-wrap{
-    height: 300vh;
+    height: 280vh;
 }
 .bg-wrap .sections-wrapper{
     position: absolute;
@@ -261,10 +265,11 @@ header{
 
 .wrapper-2{
     position: relative;
-    height: fit-content;
-    background-color: #dcffd6;
     display: flex;
     flex-direction: column;
+    height: fit-content;
+    padding-bottom: 5rem;
+    background-color: #dcffd6;
     justify-content: space-between;
     border-top: 1rem solid var(--color-1);
 }
@@ -356,59 +361,87 @@ header{
     z-index: 99;
 }
 
-.service-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2.5rem;
-    justify-content: center;
-    align-items: center;
-    margin: 5rem;
-}
-.service-card {
-    background: var(--color-2);
-    border-radius: 18px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
-    padding: 2.2rem 2.2rem 1.4rem 2.2rem;
-    min-width: 220px;
-    max-width: 260px;
-    height: 170px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    transition: box-shadow 0.2s var(--transition), transform 0.2s var(--transition);
-}
-.service-card:hover {
-    box-shadow: 0 6px 32px rgba(0,0,0,0.16);
-    transform: translateY(-2px) scale(1.04);
-}
-.service-card i.ph {
-    font-size: 2.8rem;
-    color: var(--color-1);
-    margin-bottom: 1.1rem;
-    display: block;
-    transition: color 0.2s var(--transition);
-}
-.service-card-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--color-3);
-    margin-bottom: 0.7rem;
-}
-.service-card-desc {
-    font-size: 1rem;
-    color: var(--color-3);
-    font-weight: 400;
-    opacity: 0.85;
-}
-
-
-
 .section-5{
+    position: relative;
+    display: flex;
+    height: fit-content;
+    align-items: flex-start;
+    justify-content: flex-start;
+    background-color: var(--color-2);
+    z-index: 11;
+}
+    .section-5::after{
+        content: "";
+        position: absolute;
+        left: 0;
+        top: -30px;
+        width: 100%;
+        height: 100%;
+        background-image: url(../assets/imgs/border5.png);
+        background-size: contain;
+        background-repeat: no-repeat;
+        z-index: -1;
+    }
+
+.section-5 .container-1{
+    flex: 1;
+}
+.section-5 .container-1 .service-cards{
+    margin: 2rem 5rem 5rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    gap: .5rem;
+}
+
+.section-5 .container-1 .service-cards .service-card{
+    border: 2px solid var(--color-1);    
+}
+
+.section-5 .container-1 .service-cards .service-card-title{
+    color: var(--color-3);
+    font-weight: 100;
+}
+
+.section-5 .container-1 .service-cards .service-card-title span{
+    font-size: clamp(18px, 1vw, 1rem);
+}
+
+.section-5 .container-1 .service-cards .service-card-icon{
+    border: 2px solid var(--color-1);
+}
+
+.section-5 .highlights-c{
+    font-weight: 400;
+}
+.section-5 p{
+    font-size: clamp(30px, 2.5vw, 2.5rem);
+    margin: 5rem 5rem 0rem;
+}
+.section-5 h2{
+    margin: 1rem 5rem 1rem;
+}
+
+.section-5 h3{
+    margin: 1rem 0rem 2rem;
+    font-size: calc(1em + 1vw);
+}
+.section-5 ul{
+    margin: 1rem 5rem;
+    font-size: clamp(20px, 1.3vw, 1.5rem);
+    color: var(--color-3);
+    font-family: Buenard;
+}
+.section-5 ul li{
+    margin-bottom: 0.5rem;
+}
+.section-5 .container-2{
+    flex: 1;
+}
+
+.section-6{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     height: fit-content;
     width: 100%;
     background-color: var(--color-1);
@@ -416,15 +449,87 @@ header{
     border-top: 1rem solid var(--color-2);
     z-index: 11;
 }
+.section-6 h2{
+    margin: 4rem 5rem 2.5rem;
+}
 
-    .section-5 p{
-        margin: 5rem;
-        max-width: 750px;
-        margin-bottom: 1rem;
+    .section-6 p{
+        max-width: 80vw;
         font-size: calc(1em + .6vw);
         color: var(--color-2);
+        margin: 0 5rem 2rem;
     }
-    .section-5 ul{
+
+    .section-6 .container{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4rem;
+        width: 100%;
+        margin: 3rem 5rem 5rem;
+    }
+    .section-6 .container .service-cards{
+        display: flex;
+        max-width: 80vw;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        align-items: flex-start;
+        flex-direction: column;
+        border: 2px solid var(--color-2);
+        border-radius: 30px;
+        padding: 15px 0px 20px 20px;
+    }
+    .section-6 .container .service-cards h3{
+        color: var(--color-2);
+        font-family: Buenard;
+        font-size: clamp(20px, 2vw, 2rem);
+        font-weight: bold;
+        margin-top: 0;
+    }
+.service-card {
+    position: relative;
+    min-width: fit-content;
+    max-width: 260px;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin: .5rem 1rem;
+    border: 2px solid var(--color-2);
+    border-radius: 30px;
+    padding: 6px 20px 0px;
+}
+.service-card .service-card-icon {
+    color: var(--color-1);
+    margin-bottom: 1.1rem;
+    font-size: clamp(20px, 2rem, 5vw);
+    display: block;
+    transition: color 0.2s var(--transition);
+    border: 2px solid var(--color-2);
+    border-radius: 100%;
+    background-color: var(--color-2);
+    padding: 7px;
+    position: absolute;
+    left: -27px;
+    top: -27px;
+}
+.service-card-title {
+    font-size: clamp(16px, 1.5rem, 4vw);
+    font-weight: 700;
+    color: var(--color-2);
+    margin-bottom: 0.7rem;
+}
+.service-card-title p{
+    font-size: clamp(14px, 1vw, 1rem)!important;
+}
+.service-card-desc {
+    color: var(--color-3);
+    font-weight: 400;
+    opacity: 0.85;
+}
+    .section-6 ul{
         display: flex;
         max-width: 750px;
         margin-left: 5rem;
@@ -437,9 +542,94 @@ header{
         line-height: 1.3em;
         margin-bottom: 6rem;
     }
-    .section-5 ul li{
+    .section-6 ul li{
         min-width: 300px;
         padding: 5px 10px;
         list-style: disc;
         margin: 0;
     }
+
+    .section-6 .price-calculator-wrapper{
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .section-6 .price-calculator-wrapper .container{
+        flex-direction: row;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-start;
+    }
+
+    .section-6 .price-calculator-wrapper label{
+        color: var(--color-2);
+        font-size: clamp(25px, 4vw, 3rem);
+    }
+    .section-6 .price-calculator-wrapper select{
+        background-color: var(--color-1);
+        width: 400px;
+        line-height: 2em;
+        height: 2em;
+        font-size: 1.5em;
+        padding: 0 1rem;
+        border-radius: 30px;
+        border: 2px solid var(--color-2);
+        color: var(--color-2);
+    }
+    .section-6 .price-calculator-wrapper button{
+        border: 3px solid transparent;
+    }
+    .section-6 .price-calculator-wrapper button:hover{
+        border: 3px solid var(--color-2);
+    }
+    .section-6 .price-calculator-wrapper .service-card{
+        right: 20px;
+        max-width: none;
+        margin: 2rem 2rem 1rem;
+    }
+    .section-6 .price-calculator-wrapper .service-card .service-card-title .extras-list{
+        display: flex;
+        flex-direction: column;
+    }
+    .section-6 .price-calculator-wrapper .service-card .service-card-title .extras-list .extra-item{
+        font-size: clamp(16px, 1.4vw, 1.4rem);
+        margin: 5px;
+    }
+    .section-6 .price-calculator-wrapper .price-result{
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        font-size: clamp(1.5rem, 3vw, 3rem);
+        color: var(--color-2);
+        gap: 5px;
+    }
+    .section-6 .price-calculator-wrapper .price-result .price-breakdown{
+        display: flex;
+        flex-direction: column;
+    }
+    .price-breakdown .price-rows{
+        display: flex;
+        gap: 25px;
+    }
+    .section-6 .price-calculator-wrapper .price-result .price-breakdown .price-row{
+        font-size: clamp(18px, 1.8vw, 2rem);
+    }
+    .section-6 .price-calculator-wrapper .price-result .price-breakdown .price-final{
+        font-size: clamp(30px, 2.5vw, 2.5rem);
+        margin-top: 10px;
+    }
+    .section-6 .price-calculator-wrapper .price-fee-control .card-fee-label{
+        display: flex;
+        align-items: flex-end;
+        font-size: clamp(12px, 1.5vw, 2rem);
+        color: var(--color-2);
+    }
+
+
+
+
+footer{
+    padding: 5px 0;
+}

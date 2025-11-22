@@ -249,8 +249,10 @@
                     id="description" 
                     name="description" 
                     rows="4"
+                    maxlength="225"
                     placeholder="Descripción general de la planta..."
                 >{{ old('description', $plant->description) }}</textarea>
+                <small id="description-counter" class="form-help">0 / 225</small>
             </div>
         </div>
 
@@ -345,5 +347,30 @@
             document.body.appendChild(form);
             form.submit();
         }
+
+        // Character counter for description (max 225)
+        (function() {
+            const textarea = document.getElementById('description');
+            const counter = document.getElementById('description-counter');
+            const MAX = 225;
+
+            if (!textarea || !counter) return;
+
+            function updateCounter() {
+                const len = textarea.value.length;
+                counter.textContent = `${len} / ${MAX}`;
+                if (len > MAX) {
+                    // Trim excess (shouldn't normally happen because of maxlength)
+                    textarea.value = textarea.value.slice(0, MAX);
+                    counter.textContent = `${MAX} / ${MAX}`;
+                }
+            }
+
+            // Initialize
+            updateCounter();
+
+            // Update on input
+            textarea.addEventListener('input', updateCounter);
+        })();
     </script>
 @endsection

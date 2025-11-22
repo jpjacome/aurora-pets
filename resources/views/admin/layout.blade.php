@@ -18,6 +18,7 @@
     <header class="admin-header">
         <div class="admin-left">
             <img src="/assets/home/imgs/logo4.png" alt="logo" class="admin-logo">
+
             <nav class="admin-nav">
                 <a href="/">Homepage</a>
                 <a href="/admin">Dashboard</a>
@@ -44,7 +45,10 @@
                             <span>Logout</span>
                         </button>
                     </form>
-                </div>
+                </div>                            <!-- Mobile hamburger (shown on small screens) -->
+                <button id="adminHamburgerButton" class="admin-hamburger" aria-label="Open menu" aria-controls="adminMobileMenu" aria-expanded="false">
+                    <span class="hamburger-inner" aria-hidden="true"></span>
+                </button>
             </div>
         </div>
     </header>
@@ -52,6 +56,26 @@
     <main class="admin-container">
         @yield('content')
     </main>
+
+    <!-- Mobile fullscreen menu overlay -->
+    <div id="adminMobileMenu" class="mobile-menu-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="mobile-menu-content">
+            <button id="adminMobileMenuClose" class="mobile-menu-close" aria-label="Close menu"><i class="ph ph-x"></i></button>
+            <nav class="mobile-nav">
+                <a href="/">Homepage</a>
+                <a href="/admin">Dashboard</a>
+                <a href="/admin/tests">Tests</a>
+                <a href="/admin/clients">Clients</a>
+                <a href="/admin/plants">Plants</a>
+                <a href="/admin/users">Users</a>
+                <a href="/admin/settings">Admin Settings</a>
+                <form method="POST" action="/logout" class="logout-form">
+                    @csrf
+                    <button type="submit" class="admin-dropdown-item logout-dropdown-button admin-mobile-logout">Logout</button>
+                </form>
+            </nav>
+        </div>
+    </div>
 
     <script>
         // Profile dropdown functionality
@@ -69,6 +93,55 @@
                 profileMenu.classList.remove('show');
             }
         });
+
+        // Mobile menu functionality
+        (function() {
+            const btn = document.getElementById('adminHamburgerButton');
+            const menu = document.getElementById('adminMobileMenu');
+            const closeBtn = document.getElementById('adminMobileMenuClose');
+
+            if (!btn || !menu) return;
+
+            function openMenu() {
+                btn.classList.add('open');
+                btn.setAttribute('aria-expanded', 'true');
+                menu.classList.add('active');
+                menu.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('no-scroll');
+            }
+
+            function closeMenu() {
+                btn.classList.remove('open');
+                btn.setAttribute('aria-expanded', 'false');
+                menu.classList.remove('active');
+                menu.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('no-scroll');
+            }
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = btn.classList.contains('open');
+                if (isOpen) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+
+            // Close by clicking the overlay (but not the content)
+            menu.addEventListener('click', (e) => {
+                if (e.target === menu) closeMenu();
+            });
+
+            if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+
+            // Close on Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeMenu();
+                }
+            });
+        })();
     </script>
 </body>
 </html>

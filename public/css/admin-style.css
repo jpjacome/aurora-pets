@@ -39,7 +39,7 @@ p{
     }
 
 .admin-logo { 
-    width: auto;
+    width: auto!important;
     height:40px;
     margin: 0 3rem 0 1rem;
  }
@@ -67,7 +67,6 @@ p{
     display: flex;
     align-items: center;
     padding: 0 1rem;
-
  }
 
 .logout-form { display:inline; }
@@ -159,27 +158,44 @@ p{
 
 .admin-toolbar {
     display:flex;
+    flex-wrap: wrap;
     justify-content:space-between;
     align-items:center; 
     margin-bottom:1rem;
     color: var(--color-1);
 }
+
+.admin-toolbar-search{
+    border: 1px solid var(--color-1);
+    font-size: calc(.6em + .5vw);
+}
+
 .inline-form { display:inline; }
-.toolbar-form { display:flex; gap:.5rem; align-items:center; }
+
+.toolbar-form {
+    display:flex; 
+    gap:.5rem; 
+    align-items:center;
+    flex-wrap: wrap;
+}
+
+.toolbar-form select{
+    margin-right: 10px;
+}
 
 .client-grid { display:flex; flex-wrap:wrap; gap:1rem; }
 
 .client-card { 
-    flex: 1 1 calc(30% - 1rem); 
-    min-width: 220px; 
-    background: white;
+    flex: 1 1 calc(30% - 1rem);
+    min-width: 220px;
+    background: var(--color-2);
     padding: 1.25rem;
     border-radius: 12px;
     position: relative;
     cursor: pointer;
-    transition: all 0.3s 
-ease;
-    border: 2px solid var(--color-2);
+    transition: all 0.3s ease;
+    border: 1px solid var(--color-1);
+    color: var(--color-3);
 }
 
 .client-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
@@ -437,6 +453,7 @@ ease;
 /* ============================================
    PLANT GRID & CARDS
    ============================================ */
+
 .plant-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -444,23 +461,24 @@ ease;
 }
 
 .plant-card {
-    background: white;
-    padding: 1.25rem;
+    background: var(--color-2);
+    padding: 1.5rem 1rem;
+    border: 1px solid var(--color-1);
     border-radius: 12px;
+    color: var(--color-3);
     position: relative;
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 2px solid var(--color-2);
 }
 
 .plant-card:hover {
-    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .plant-card.selected {
     border: 2px solid var(--color-1);
     background: var(--color-1);
+    color: black;
 }
 
 .plant-card.inactive-plant {
@@ -474,8 +492,8 @@ ease;
 
 .card-checkbox {
     position: absolute;
-    top: 1px;
-    right: 1px;
+    top: 3px;
+    right: 3px;
     width: 20px;
     height: 20px;
     cursor: pointer;
@@ -486,8 +504,62 @@ ease;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 0.75rem;
+    margin: 1rem 0;
 }
+
+/* Plants list specific utilities (moved from inline styles in plants.blade.php) */
+.plants-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 10px;
+}
+
+.plants-header h1 { 
+    margin: 0; 
+}
+
+.plants-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.errors-list {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1.5rem;
+}
+
+.plant-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.plant-name {
+    font-size: 1.1rem;
+}
+
+.care-info-title {
+    color: var(--aurora-green);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Icon sizing utilities used in plant list */
+.icon-lg { font-size: 1.5rem; }
+.icon-md { font-size: 1.25rem; }
+
+/* Care item icon color variants */
+.care-icon--substrate { color: #8B4513; }
+.care-icon--lighting { color: #FFA500; }
+.care-icon--watering { color: #1E90FF; }
+
+/* ensure some icon buttons render inline where necessary */
+.icon-btn-inline { display: inline-flex; align-items: center; }
 
 .plant-card-info {
     margin-bottom: 0.75rem;
@@ -550,7 +622,6 @@ ease;
 
 .edit-btn:hover {
     background: #e67a1f;
-    transform: translateY(-1px);
 }
 
 /* ============================================
@@ -681,28 +752,32 @@ ease;
 }
 
 .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    width: 60%;
 }
 
 .form-group {
     margin-bottom: 1.25rem;
+    color: var(--color-1);
+    display: flex;
+    flex-direction: column;
 }
 
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #333;
+    color: var(--color-1);
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
-    width: 100%;
+    width: 90%;
     padding: 0.75rem;
     border: 1px solid #ddd;
+    background-color: var(--color-3);
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
@@ -752,6 +827,26 @@ ease;
     background: white;
 }
 
+.admin-buttons{
+    display:flex;
+    gap:0.5rem;
+    margin-top:3rem;
+    flex-wrap: wrap;
+}
+
+.admin-buttons button{
+    width: fit-content;
+}
+
+.admin-buttons .btn-primary:hover{
+    transform: none;
+}
+.admin-buttons .btn-secondary{
+    color: var(--color-1);
+    background-color: transparent;
+    border: 1px solid var(--color-1);
+}
+
 .btn-primary,
 .btn-secondary {
     padding: 0.75rem 1.5rem;
@@ -765,21 +860,21 @@ ease;
 
 .btn-primary {
     background: var(--color-1);
-    color: white;
+    color: var(--color-3);
 }
 
 .btn-primary:hover {
     background: #e67a1f;
-    transform: translateY(-1px);
 }
 
 .btn-secondary {
-    background: #f0f0f0;
-    color: #333;
+    color: var(--color-1);
+    background-color: transparent;
+    border: 1px solid var(--color-1);
 }
 
 .btn-secondary:hover {
-    background: #e0e0e0;
+    background: var(--color-3);
 }
 
 /* ============================================
@@ -943,6 +1038,26 @@ ease;
     font-size: 0.875rem;
 }
 
+.preview-wrapper{
+    flex: 0 0 420px;
+    max-width: 100%;
+    border: 1px solid var(--color-3);
+    padding: 1rem;
+    border-radius: 6px;
+}
+.preview-wrapper h4{
+    color: var(--color-1);
+}
+#previewArea{
+    width: 100%;
+    height: 700px;
+    background-color: var(--color-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+}
+
 /* New photo previews (before upload) */
 .photos-preview {
     display: grid;
@@ -1029,23 +1144,22 @@ ease;
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 2rem;
+    margin: 3rem 1rem;
 }
 
 .dashboard-card {
-    background: white;
+    background: var(--color-2);
     padding: 1rem;
     border-radius: 12px;
-    border: 2px solid var(--color-2);
+    border: 1px solid var(--color-1);
     text-decoration: none;
-    color: inherit;
+    color: var(--color-3);
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
 .dashboard-card:hover {
-    transform: translateY(-3px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
@@ -1065,13 +1179,16 @@ ease;
     margin: 0;
     font-family: 'Playfair Display', serif;
     font-size: 1.15rem;
-    color: var(--color-2);
 }
 
 .dashboard-card-body {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+}
+
+.dashboard-card i{
+    color: var(--color-1);
 }
 
 .dashboard-stat-main {
@@ -1083,13 +1200,11 @@ ease;
 .dashboard-stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--color-2);
     line-height: 1;
 }
 
 .dashboard-stat-label {
     font-size: 0.8rem;
-    color: #666;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -1109,13 +1224,11 @@ ease;
 .dashboard-stat-value-small {
     font-size: 1.35rem;
     font-weight: 600;
-    color: var(--color-1);
     line-height: 1;
 }
 
 .dashboard-stat-label-small {
     font-size: 0.75rem;
-    color: #666;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -1125,11 +1238,12 @@ ease;
    ============================================ */
 .admin-table {
     width: 100%;
-    background: white;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border-collapse: collapse;
+    border: 1px solid var(--color-1);
+    color: var(--gray-100);
 }
 
 .admin-table thead {
@@ -1162,6 +1276,7 @@ ease;
 .admin-table td {
     padding: 1rem;
     vertical-align: middle;
+    border-top: 1px solid var(--color-1);
 }
 
 .admin-table td a {
@@ -1225,4 +1340,125 @@ ease;
     .admin-table td {
         padding: 0.75rem 0.5rem;
     }
+}
+
+/* ============================================
+   MOBILE HAMBURGER & FULLSCREEN MENU
+   ============================================ */
+
+/* Hidden by default, shown on small screens via media query */
+.admin-hamburger {
+    display: none;
+    background: transparent;
+    border: 0;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+    color: var(--color-1);
+}
+.admin-hamburger:focus {
+    outline: 2px solid rgba(0,0,0,0.08);
+}
+.admin-hamburger .hamburger-inner,
+.admin-hamburger .hamburger-inner::before,
+.admin-hamburger .hamburger-inner::after {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    position: relative;
+}
+.admin-hamburger .hamburger-inner::before,
+.admin-hamburger .hamburger-inner::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.admin-hamburger .hamburger-inner::before { top: -7px; }
+.admin-hamburger .hamburger-inner::after { top: 7px; }
+
+/* Mobile menu overlay */
+.mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    opacity: 0;
+    visibility: hidden;
+}
+.mobile-menu-overlay.active {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+}
+.mobile-menu-content {
+    width: 100%;
+    max-width: 480px;
+    height: 100dvh;
+    background: var(--color-2);
+    padding: 2rem;
+    position: relative;
+}
+.mobile-menu-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: 1px solid var(--color-1);
+    border-radius: 10px;
+    font-size: 1.4rem;
+    color: var(--color-1);
+    cursor: pointer;
+}
+.mobile-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    padding: 1rem;
+}
+.mobile-nav a {
+    font-size: calc(1.5em + .5vw);
+    color: var(--color-1);
+    text-decoration: none;
+    padding: 0.75rem 0.5rem;
+
+}
+.mobile-nav a:hover {
+    background: var(--color-2);
+    color: var(--color-3);
+}
+.admin-mobile-logout{
+    margin-top: 2rem;
+    color: var(--color-1);
+    font-size: calc(1.5em + .5vw);
+}
+
+/* When menu is open, animate hamburger into an X */
+.admin-hamburger.open .hamburger-inner { background: transparent; }
+.admin-hamburger.open .hamburger-inner::before { transform: translateY(7px) rotate(45deg); }
+.admin-hamburger.open .hamburger-inner::after { transform: translateY(-7px) rotate(-45deg); }
+.admin-hamburger.open .hamburger-inner::before,
+.admin-hamburger.open .hamburger-inner::after { background: currentColor; }
+
+/* Utility to lock scrolling when menu open */
+body.no-scroll { overflow: hidden; }
+
+@media (max-width: 768px) {
+    /* Hide desktop nav and show hamburger */
+    .admin-nav { display: none !important; }
+    .admin-hamburger { display: inline-flex; }
+    /* Adjust header spacing for hamburger */
+    .admin-left { gap: 0.5rem; }
 }

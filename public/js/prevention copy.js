@@ -4,12 +4,6 @@ gsap.registerPlugin(ScrollTrigger, ScrollSmoother, SplitText);
 // Fix mobile viewport height issue (address bar shows/hides)
 // Calculate and set custom --vh property
 function setVhProperty() {
-    // MOBILE FIX: Don't update --vh on mobile when keyboard is open (input focused)
-    // This prevents wrappers from resizing when the keyboard appears
-    if (window.innerWidth <= 600 && window.__ps_inputFocused) {
-        return; // Skip update when mobile keyboard is showing
-    }
-    
     // Prefer the Visual Viewport height when available (handles address-bar show/hide)
     const vv = (window.visualViewport && typeof window.visualViewport.height === 'number') ? window.visualViewport.height : window.innerHeight;
     const vh = vv * 0.01;
@@ -49,16 +43,21 @@ const debouncedRefresh = (gsap && gsap.utils && typeof gsap.utils.debounce === '
     // Only run for mobile phones (not tablets/desktop)
     if (window.innerWidth > 600) return;
 
-    // MOBILE FIX: Don't refresh ScrollTrigger on mobile since we don't use pinning/stacking
-    // ScrollTrigger.refresh() causes wrapper displacement when keyboard opens
-    // Mobile uses native scrolling without GSAP effects
-    
-    // Only handle scroll lock position updates if needed (desktop-only feature)
+    try {
+        // Refresh ScrollTrigger so pins and start/end recalculations use current viewport
+        if (window.ScrollTrigger) ScrollTrigger.refresh();
+    } catch (e) {
+        // ignore
+    }
+
+    // If a smoother exists and a scroll lock is active, recompute lock position
     try {
         const smoother = window.ScrollSmoother ? ScrollSmoother.get() : null;
-        if (typeof scrollLockActive !== 'undefined' && scrollLockActive && smoother) {
-            if (typeof smoother.scrollTop === 'function') {
+        if (typeof scrollLockActive !== 'undefined' && scrollLockActive) {
+            if (smoother && typeof smoother.scrollTop === 'function') {
                 lockScrollPosition = smoother.scrollTop();
+            } else {
+                lockScrollPosition = window.pageYOffset || document.documentElement.scrollTop || 0;
             }
         }
     } catch (e) {}
@@ -66,12 +65,10 @@ const debouncedRefresh = (gsap && gsap.utils && typeof gsap.utils.debounce === '
 }, 80);
 
 // If VisualViewport API exists, listen for its resize/scroll events to detect address-bar toggles
-// MOBILE FIX: Only update --vh property, don't trigger debounced refresh which calls ScrollTrigger.refresh()
 if (window.visualViewport) {
     const onVVChange = function() {
         setVhProperty();
-        // Don't call debouncedRefresh() on mobile - it causes wrapper displacement via ScrollTrigger.refresh()
-        // Mobile uses native scrolling without GSAP pinning effects
+        debouncedRefresh();
     };
     try {
         visualViewport.addEventListener('resize', onVVChange);
@@ -80,27 +77,8 @@ if (window.visualViewport) {
 }
 
 // Also trigger debounced refresh on global resize/orientationchange
-// MOBILE FIX: These events can trigger ScrollTrigger.refresh() which breaks mobile layout
-// Only respond to actual orientation changes on mobile, not resize (which happens with keyboard)
-window.addEventListener('resize', function() {
-    // Only trigger refresh on desktop/tablet (>600px)
-    if (window.innerWidth > 600) {
-        debouncedRefresh();
-    } else {
-        // On mobile, only update --vh property without triggering GSAP refresh
-        setVhProperty();
-    }
-});
-
-window.addEventListener('orientationchange', function() {
-    setTimeout(function() {
-        setVhProperty();
-        // Only trigger GSAP refresh on desktop/tablet
-        if (window.innerWidth > 600) {
-            debouncedRefresh();
-        }
-    }, 140);
-});
+window.addEventListener('resize', debouncedRefresh);
+window.addEventListener('orientationchange', function(){ setTimeout(debouncedRefresh, 140); });
 
 function scrollToSection(sectionNumber) {
     const section = document.getElementById(`section-${sectionNumber}`);
@@ -581,17 +559,6 @@ function unlockAndScrollToNext() {
         return; // Don't proceed if validation fails
     }
     
-    // Mobile-specific: Show wrapper-5 (loading animation) when calculation starts
-    const isMobile = window.innerWidth <= 600;
-    if (isMobile) {
-        const wrapper5 = document.querySelector('.wrapper-5');
-        if (wrapper5) {
-            wrapper5.classList.add('mobile-active');
-            // Scroll to top to ensure user sees the loading animation
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }
-    
     // debug removed
     
     // Compute result now and cache it for the result renderer
@@ -779,12 +746,8 @@ function unlockAndScrollToNext() {
 }
 
 // Initialize ScrollSmoother
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if mobile (≤600px) - disable stacking effects for mobile only
-    const isMobile = window.innerWidth <= 600;
-    
-    // Create ScrollSmoother instance (disabled for mobile)
-    const smoother = !isMobile ? ScrollSmoother.create({
+document.addEventListener('DOMContentLoaded', function() {            // Create ScrollSmoother instance
+    const smoother = ScrollSmoother.create({
         wrapper: '#smooth-wrapper',
         content: '#smooth-content',
         
@@ -810,160 +773,138 @@ document.addEventListener('DOMContentLoaded', function() {
             // Called on every scroll update - simplified for performance
         },
         
-    }) : null;    // **SOLUTION: True deck-of-cards stacking effect**
+    });    // **SOLUTION: True deck-of-cards stacking effect**
     // All sections stack on top of each other at the top of the screen
-    // ONLY ENABLED FOR DESKTOP/TABLET (>600px)
-    if (!isMobile) {
-        let sections = gsap.utils.toArray('.wrapper');
+    let sections = gsap.utils.toArray('.wrapper');
+    
+    sections.forEach((section, i) => {
+        // Set z-index so first section is on bottom, last section is on top
+        gsap.set(section, { zIndex: i + 1 });
         
-        sections.forEach((section, i) => {
-            // Set z-index so first section is on bottom, last section is on top
-            gsap.set(section, { zIndex: i + 1 });
-            
-            // Create the main stacking ScrollTrigger
-            ScrollTrigger.create({
-                trigger: section,
-                start: 'top top',
-                end: `+=${window.innerHeight}`,
-                pin: true,
-                pinSpacing: false,
-                scroller: '#smooth-wrapper',
-                onUpdate: (self) => {
-                    // As we scroll through this section, scale down all previous sections
-                    const progress = self.progress;
+        // Create the main stacking ScrollTrigger
+        ScrollTrigger.create({
+            trigger: section,
+            start: 'top top',
+            end: `+=${window.innerHeight}`,
+            pin: true,
+            pinSpacing: false,
+            scroller: '#smooth-wrapper',
+            onUpdate: (self) => {
+                // As we scroll through this section, scale down all previous sections
+                const progress = self.progress;
+                
+                // Scale down and move previous sections
+                for (let j = 0; j < i; j++) {
+                    const scale = 1 - (progress * 0.05 * (i - j)); // Gradual scale down
+                    const y = progress * -20 * (i - j); // Move up slightly
                     
-                    // Scale down and move previous sections
-                    for (let j = 0; j < i; j++) {
-                        const scale = 1 - (progress * 0.05 * (i - j)); // Gradual scale down
-                        const y = progress * -20 * (i - j); // Move up slightly
-                        
-                        gsap.set(sections[j], {
-                            scale: scale,
-                            y: y,
-                            transformOrigin: 'center top'
-                        });
-                    }
+                    gsap.set(sections[j], {
+                        scale: scale,
+                        y: y,
+                        transformOrigin: 'center top'
+                    });
                 }
-            });
+            }
         });
-    }    
+    });    
     
     // **ELEGANT POP ANIMATIONS FOR INNER CONTAINERS**
     // Create beautiful entrance animations for each inner container (EXCEPT wrapper-1)
-    // ONLY ENABLED FOR DESKTOP/TABLET (>600px)
-    if (!isMobile) {
-        const innerContainers = gsap.utils.toArray('.inner-container').filter((container, index) => {
-            // Exclude wrapper-1's inner-container (index 0) since it has its own page load animation
-            return index !== 0;
+    const innerContainers = gsap.utils.toArray('.inner-container').filter((container, index) => {
+        // Exclude wrapper-1's inner-container (index 0) since it has its own page load animation
+        return index !== 0;
+    });
+    
+    innerContainers.forEach((container, i) => {
+        // Set initial state - hidden and smaller
+        gsap.set(container, {
+            opacity: 0,
+            scale: 0.8,
+            y: 60,
+            rotationX: 15,
+            transformOrigin: "center center"
         });
         
-        innerContainers.forEach((container, i) => {
-            // Set initial state - hidden and smaller
-            gsap.set(container, {
-                opacity: 0,
-                scale: 0.8,
-                y: 60,
-                rotationX: 15,
-                transformOrigin: "center center"
-            });
-            
-            // Create the pop animation timeline - one-time entrance only
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: container.closest('.wrapper'), // Trigger on parent wrapper instead
-                    start: 'top 80%', // Start when container is 80% in view
-                    end: 'top 20%', // End when container reaches 20% from top
-                    toggleActions: 'play none none reverse', // Play on enter, reverse on leave
-                    scroller: '#smooth-wrapper', // Use same scroller as ScrollSmoother
-                    // Optional: Add markers for debugging (remove in production)
-                    // markers: true,
-                    onToggle: self => {
-                        if (self.isActive) {
-                        } else {
-                        }
+        // Create the pop animation timeline - one-time entrance only
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: container.closest('.wrapper'), // Trigger on parent wrapper instead
+                start: 'top 80%', // Start when container is 80% in view
+                end: 'top 20%', // End when container reaches 20% from top
+                toggleActions: 'play none none reverse', // Play on enter, reverse on leave
+                scroller: '#smooth-wrapper', // Use same scroller as ScrollSmoother
+                // Optional: Add markers for debugging (remove in production)
+                // markers: true,
+                onToggle: self => {
+                    if (self.isActive) {
+                    } else {
                     }
                 }
-            });
-            
-            // Animate container only
-            tl.to(container, {
-                opacity: 1,
+            }
+        });
+        
+        // Animate container only
+        tl.to(container, {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            rotationX: 0,
+            duration: 1.2,
+            ease: "back.out(1.4)", // Bouncy ease for pop effect
+            delay: i * 0.15 // Stagger animation for each container
+        });
+        
+        container.addEventListener('mouseleave', () => {
+            gsap.to(container, {
+                boxShadow: "0 0 0px rgba(255, 255, 255, 0)",
                 scale: 1,
-                y: 0,
-                rotationX: 0,
-                duration: 1.2,
-                ease: "back.out(1.4)", // Bouncy ease for pop effect
-                delay: i * 0.15 // Stagger animation for each container
-            });
-            
-            container.addEventListener('mouseleave', () => {
-                gsap.to(container, {
-                    boxShadow: "0 0 0px rgba(255, 255, 255, 0)",
-                    scale: 1,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
+                duration: 0.3,
+                ease: "power2.out"
             });
         });
-    } else {
-        // Mobile: ensure all inner containers are immediately visible (no animations)
-        const innerContainers = gsap.utils.toArray('.inner-container');
-        innerContainers.forEach((container) => {
-            gsap.set(container, {
-                opacity: 1,
-                scale: 1,
-                y: 0,
-                rotationX: 0,
-                clearProps: "all"
-            });
-        });
-    }    // Refresh ScrollTrigger on window resize
+    });    // Refresh ScrollTrigger on window resize
     window.addEventListener('resize', () => {
         ScrollTrigger.refresh();
     });
     
-    // Initialize scroll lock system - GSAP-native approach (desktop/tablet only)
-    if (!isMobile) {
-        setTimeout(() => {
-            createGSAPScrollLock();
-        }, 1000); // Delay to ensure all other ScrollTriggers are created first
-    }
+    // Initialize scroll lock system - GSAP-native approach
+    setTimeout(() => {
+        createGSAPScrollLock();
+    }, 1000); // Delay to ensure all other ScrollTriggers are created first
 
-    // **SCROLL SNAP SYSTEM** - GSAP ScrollTrigger-based implementation (desktop/tablet only)
+    // **SCROLL SNAP SYSTEM** - GSAP ScrollTrigger-based implementation
     // Initialize scroll snapping after ScrollSmoother is ready
-    if (!isMobile) {
-        setTimeout(() => {
-            initializeScrollSnap();
-        }, 1200); // Slight delay after scroll lock to ensure proper initialization
-    }// **DYNAMIC CONTROL METHODS** - Call these from browser console to test
+    setTimeout(() => {
+        initializeScrollSnap();
+    }, 1200); // Slight delay after scroll lock to ensure proper initialization// **DYNAMIC CONTROL METHODS** - Call these from browser console to test
     window.controlSmoothScroll = {
         // Change smoothing amount (0-5)
         setSmooth: (value) => {
-            if (smoother) smoother.smooth(value);
+            smoother.smooth(value);
         },
         
         // Get current smooth value
         getSmooth: () => {
-            return smoother ? smoother.smooth() : 0;
+            return smoother.smooth();
         },
         
         // Pause/resume smooth scrolling
         pause: () => {
-            if (smoother) smoother.paused(true);
+            smoother.paused(true);
         },
         
         resume: () => {
-            if (smoother) smoother.paused(false);
+            smoother.paused(false);
         },
         
         // Get current scroll progress (0-1)
         getProgress: () => {
-            return smoother ? smoother.progress : 0;
+            return smoother.progress;
         },
         
         // Get current scroll velocity
         getVelocity: () => {
-            return smoother ? smoother.getVelocity() : 0;
+            return smoother.getVelocity();
         }
     };
     // **ANIMATION CONTROL METHODS** - Control the pop animations
@@ -1966,22 +1907,6 @@ window.scrollSnapControl = {
     // Function to show final result (can be called later when calculation is complete)
     function showPlantResult(plantName, plantDescription) {
         stopLoadingAnimation();
-        
-        // Mobile-specific: Hide wrapper-5 and show wrapper-6
-        const isMobile = window.innerWidth <= 600;
-        if (isMobile) {
-            const wrapper5 = document.querySelector('.wrapper-5');
-            const wrapper6 = document.querySelector('.wrapper-6');
-            
-            if (wrapper5) {
-                wrapper5.classList.remove('mobile-active');
-            }
-            if (wrapper6) {
-                wrapper6.classList.add('mobile-active');
-                // Scroll to top to ensure user sees the result
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
 
         const loadingContainer = document.querySelector('.loading-container');
         const resultsContainer = document.querySelector('.results-static-container');

@@ -32,7 +32,7 @@ class PlantController extends Controller
                 'scientific_name' => 'nullable|string|max:255',
                 'family' => 'nullable|string|max:255',
                 'species' => 'nullable|string|max:255',
-                'description' => 'nullable|string',
+                'description' => 'nullable|string|max:225',
                 'substrate_info' => 'nullable|string',
                 'lighting_info' => 'nullable|string',
                 'light_requirement' => 'nullable|string|max:255',

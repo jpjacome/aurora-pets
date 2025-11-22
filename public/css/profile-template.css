@@ -253,7 +253,8 @@ main{
                 max-height: 500px;
                 aspect-ratio: 1;
                 object-fit: cover;
-                border-radius: 10px;
+                border-radius: 100%;
+                border: 6px solid var(--color-1);
             }
             
             .slider-mascota img:first-child {
