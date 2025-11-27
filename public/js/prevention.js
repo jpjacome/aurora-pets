@@ -635,6 +635,15 @@ function unlockAndScrollToNext() {
             const emailInput = document.getElementById('result-email');
             const email = emailInput ? emailInput.value.trim() : '';
             
+            // DEBUG: Log email attempt details
+            console.log('🔍 Email attempt:', {
+                hasCheckbox: !!consentCheckbox,
+                isChecked: consentCheckbox?.checked,
+                hasEmailInput: !!emailInput,
+                email: email,
+                willSend: !!(consentCheckbox && consentCheckbox.checked && email)
+            });
+            
             // Only proceed if checkbox is checked and email is valid
             if (!consentCheckbox || !consentCheckbox.checked || !email) {
                 console.log('⏭️ Skipping email image send (not consented or no email)');

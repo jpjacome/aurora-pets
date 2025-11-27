@@ -41,38 +41,33 @@
 
     {{-- Scrollable sections --}}
     <main class="sections">
+        <div class='sections-wrapper'>
         <div class="bg-wrap">
             <div class="bg-container">
                 <img id="bg-frame" src="{{ asset('assets/home/imgs/frames/frame_13.webp') }}" alt="background frame" aria-hidden="true" />
-            </div>
-            <div class='sections-wrapper'>
-                <section class="section section-1">
-                    <div id="page-1" class="fade-in inner">
-                        <h1 class="trigger"><span class="highlights-c">Celebra la vida</span> <br>de tu mascota</h1>
-                        
-                        <div class="text">
-                            <p>Aurora es la primera <span class="highlights-c">urna compostable</span> diseñada para convertir las cenizas de <span class="highlights-c">nuestra mascota</span> en su planta favorita.</p>
-                        </div>
-                    </div>
-                </section>
-                
-                <section class="section section-2">
+            </div>            
+        </div>
+            <section class="section section-1">
+                <div id="page-1" class="fade-in inner">
+                    <h1 class="trigger"><span class="highlights-c">Celebra la vida</span> <br>de tu mascota</h1>
                     
-                    <img src="{{ asset('assets/urn.png') }}" alt="frame" aria-hidden="true" />
-                    <div id="page-2" class="inner">
-                        <h2>¿Cómo funciona?</h2>
-                        <p>Aurora tiene una fórmula <span class="highlights-c">100% compostable </span>que proporciona el mejor hábitat posible para la planta en crecimiento y le permite asimilar las cenizas al crecer.<br></p>
-                            <div class="container">
-                                <span><img src="{{ asset('assets/how1.png') }}" alt=""></span>
-                            </div>
+                    <div class="text">
+                        <p>Aurora es la primera <span class="highlights-c">urna compostable</span> diseñada para convertir las cenizas de <span class="highlights-c">nuestra mascota</span> en su planta favorita.</p>
                     </div>
-                </section>
+                </div>
+            </section>
+            
+            <section class="section section-2">
                 
-                <section class="section section-3">
-                    <div id="page-3" class="inner">
-                    </div>
-                </section>
-            </div>
+                <img src="{{ asset('assets/urn.png') }}" alt="frame" aria-hidden="true" />
+                <div id="page-2" class="inner">
+                    <h2>¿Cómo funciona?</h2>
+                    <p>Aurora tiene una fórmula <span class="highlights-c">100% compostable </span>que proporciona el mejor hábitat posible para la planta en crecimiento y le permite asimilar las cenizas al crecer.<br></p>
+                        <div class="container">
+                            <span><img id="how-image" src="{{ asset('assets/how1.png') }}" alt=""></span>
+                        </div>
+                </div>
+            </section>
         </div>
         
         <div class='wrapper-2'>
@@ -89,8 +84,6 @@
                             <p>Descubre cuál es la planta favorita de tu mascota</p>
                             <button class="scan-button">Realizar test</button>               
                     </div>
-                </div>
-                <div id="page-5">
                 </div>
 
             </section>
@@ -120,6 +113,7 @@
                             <div class="service-card-title">Facilidades de pago</div>
                         </div>
                     </div>
+                    <button class="plan-button">Contáctanos</button>
                 </div>
                 <div class='container-2'>
                     

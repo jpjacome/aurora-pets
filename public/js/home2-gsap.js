@@ -3,6 +3,7 @@
   'use strict';
 
   // Wrap text nodes in spans but preserve existing element structure
+  // Words are wrapped in word containers to prevent mid-word line breaks
   function wrapTextNodes(node) {
     const children = Array.from(node.childNodes);
     children.forEach(child => {
@@ -11,14 +12,37 @@
         // If text node is empty, skip
         if (text.length === 0) return;
         const frag = document.createDocumentFragment();
-        for (let i = 0; i < text.length; i++) {
-          const ch = text[i];
-          const span = document.createElement('span');
-          span.className = 'gsap-letter';
-          // keep exact character (including spaces) so spacing remains
-          span.textContent = ch;
-          frag.appendChild(span);
-        }
+        
+        // Split by spaces to keep words together
+        const words = text.split(' ');
+        words.forEach((word, wordIndex) => {
+          if (word.length > 0) {
+            // Create a word wrapper span
+            const wordSpan = document.createElement('span');
+            wordSpan.className = 'gsap-word';
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            
+            // Wrap each letter in the word
+            for (let i = 0; i < word.length; i++) {
+              const ch = word[i];
+              const span = document.createElement('span');
+              span.className = 'gsap-letter';
+              span.textContent = ch;
+              wordSpan.appendChild(span);
+            }
+            frag.appendChild(wordSpan);
+          }
+          
+          // Add space after word (except last word)
+          if (wordIndex < words.length - 1) {
+            const spaceSpan = document.createElement('span');
+            spaceSpan.className = 'gsap-letter gsap-space';
+            spaceSpan.textContent = ' ';
+            frag.appendChild(spaceSpan);
+          }
+        });
+        
         child.parentNode.replaceChild(frag, child);
       } else if (child.nodeType === Node.ELEMENT_NODE) {
         wrapTextNodes(child);

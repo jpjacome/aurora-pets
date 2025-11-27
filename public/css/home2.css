@@ -7,6 +7,7 @@
 
 body{
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 header{
@@ -26,14 +27,27 @@ header{
     justify-content: center;
     background: transparent;
 }
+@media only screen and (max-width: 800px){
+    .section{
+        height: auto;
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+}
 
 .section .inner {
     width: calc(100% - 10rem);
     padding: 0 5rem;
 }
+@media only screen and (max-width: 800px){
+    .section .inner{
+        width: calc(100% - 4rem);
+        padding: 0 2rem;
+    }
+}
 
 .section h2 {
-    font-size: clamp(2rem, 5vw, 4rem);
+    font-size: clamp(40px, 5vw, 4rem);
     margin: 0;
     padding: 1rem 0rem;
 }
@@ -42,19 +56,35 @@ header{
 /* Frame image sitting behind content */
 
 .bg-wrap{
-    position: relative;
+    position: absolute;
+    height: 280vh;
+    width: 100%;
+}
+@media only screen and (max-width: 800px){
+    .bg-wrap{
+        height: 195vh;
+    }
 }
 
+.bg-wrap .sections-wrapper{
+    position: absolute;
+    top: 0;
+}
 .bg-container {
     position: sticky;
     top: var(--header-height);
     display: flex;
     justify-content: flex-end;
     width: 100%;
-    height: calc(100vh - var(--header-height));
+    height: calc(100vh - 74px);
     overflow: hidden;
     z-index: -1;
     pointer-events: none;
+}
+@media only screen and (max-width: 800px){
+    .bg-container{
+        display: none;
+    }
 }
 
     .bg-container::after{
@@ -160,6 +190,13 @@ header{
     justify-content: center;
     height: 100vh;
 }
+@media only screen and (max-width: 800px){
+    #page-1{
+        height: auto;
+        justify-content: flex-start;
+        margin-top: 12rem;
+    }
+}
 
 #page-1 h3{
     position: relative;
@@ -182,14 +219,15 @@ header{
 
 #page-1 h1{
     text-align: left;
-    font-size: clamp(2.5rem, 7vw, 7rem);
+    font-size: clamp(50px, 7vw, 7rem);
     line-height: .9em;
     margin-bottom: 1rem;
 }
 
 #page-1 .text{
     font-size: calc(1em + .5vw);
-    max-width: 750px;
+    width: 750px;
+    max-width: 90vw;
 }
 
 .section-2{
@@ -205,6 +243,18 @@ header{
     max-height: 50vh;
     min-height: 250px;
 }
+            @media only screen and (max-width: 800px) {
+                .section-2 img{
+                    margin: 2rem 2rem;
+                    max-width: 85vw;
+                    margin-left: 2rem !important;
+                }
+            }
+@media only screen and (max-width: 800px) {
+    .section-2 #how-image{
+        margin-top: 0;
+    }
+}
 
 #page-2{
     display: flex;
@@ -217,9 +267,14 @@ header{
         color: var(--color-1);
         margin-bottom: 2rem;
     }
-
+     @media only screen and (max-width: 800px) {
+        #page-2 h2{
+            margin-bottom: 0;
+        }
+     }
     #page-2 p{
-        max-width: 750px;
+        width: 750px;
+        max-width: 90vw;
     }
 
     #page-2 .container{
@@ -236,6 +291,7 @@ header{
                     flex-direction: row;
                     align-items: center;
                     width: 100vw;
+                    margin-top: 0;
                 }
             }
         #page-2 span{
@@ -254,14 +310,6 @@ header{
 }
 
 
-
-.bg-wrap{
-    height: 280vh;
-}
-.bg-wrap .sections-wrapper{
-    position: absolute;
-    top: 0;
-}
 
 .wrapper-2{
     position: relative;
@@ -286,29 +334,57 @@ header{
     transform-origin: center center;
     will-change: transform;
 }
+@media only screen and (max-width: 800px){
+    .page-bg-video{
+        position: absolute;
+        height: 80vh;
+        width: auto;
+        min-width: 100%;
+        object-fit: cover;
+        object-position: left center;
+        transform-origin: left center !important;
+    }
+}
 
 .section-4{
     position: relative;
     flex-direction: column;
 }
-
+@media only screen and (max-width: 800px){
+    .section-4{
+        gap: 5rem;
+    }
+}
 
 .wrapper-2 .image-container{
     position: sticky;
-    top: 100px;
+    top: 143px;
     display: flex;
     justify-content: flex-end;
     width: 100%;
     z-index: 0;
 }
+@media only screen and (max-width: 800px){
+    .wrapper-2 .image-container{
+        position: relative;
+        z-index: 20;
+        top: 10px;
+    }
+}
 .wrapper-2 .image-container img{
     position: relative;
     width: 700px;
     bottom: 30px;
-    max-width: 80vw;
+    max-width: 90vw;
     transform: rotate(-3deg);
     z-index: 5;
     margin-right: 4rem; 
+}
+@media only screen and (max-width: 800px){
+    .wrapper-2 .image-container img{
+        margin-right: 1rem;
+        bottom: -20px;
+    }
 }
 
 .wrapper-2 #page-4{
@@ -322,6 +398,12 @@ header{
     justify-content: center;
     color: black;
     z-index: 10;
+}
+@media only screen and (max-width: 800px){
+    .wrapper-2 #page-4{
+        padding: 0;
+        margin-top: 0;
+    }
 }
 
 .wrapper-2 #page-4 .scan-container{
@@ -337,6 +419,12 @@ header{
     border: 1rem solid var(--color-1);
     color: var(--color-2);
 
+}
+@media only screen and (max-width: 800px){
+    .wrapper-2 #page-4 .scan-container{
+        height: auto;
+        bottom: 0;
+    }
 }
 
 .wrapper-2 #page-4 .scan-container p{
@@ -370,6 +458,12 @@ header{
     background-color: var(--color-2);
     z-index: 11;
 }
+    @media only screen and (max-width: 800px) {
+        .section-5{
+            flex-direction: column;
+            align-items: center;
+        }
+    }
     .section-5::after{
         content: "";
         position: absolute;
@@ -382,15 +476,25 @@ header{
         background-repeat: no-repeat;
         z-index: -1;
     }
+    @media only screen and (max-width: 800px){
+        .section-5::after{
+            top: -10px;
+        }
+    }
 
 .section-5 .container-1{
     flex: 1;
 }
 .section-5 .container-1 .service-cards{
-    margin: 2rem 5rem 5rem;
+    margin: 2rem 5rem 2rem;
     display: flex;
     flex-direction: column;
     gap: .5rem;
+}
+@media only screen and (max-width: 800px){
+    .section-5 .container-1 .service-cards{
+        margin: 2rem 2rem 2rem;
+    }
 }
 
 .section-5 .container-1 .service-cards .service-card{
@@ -410,17 +514,36 @@ header{
     border: 2px solid var(--color-1);
 }
 
+.section-5 .container-1 .plan-button{
+    margin: 0rem 6rem 2rem;
+    background-color: var(--color-1);
+    border: 2px solid var(--color-1);
+}
+.section-5 .container-1 .plan-button:hover{
+    border: 2px solid var(--color-1);
+    background-color: var(--color-2);
+}
+
 .section-5 .highlights-c{
     font-weight: 400;
 }
 .section-5 p{
-    font-size: clamp(30px, 2.5vw, 2.5rem);
+    font-size: clamp(25px, 2.5vw, 2.5rem);
     margin: 5rem 5rem 0rem;
+}
+@media only screen and (max-width: 800px){
+    .section-5 p{
+        margin: 2rem 2rem 0rem;
+    }
 }
 .section-5 h2{
     margin: 1rem 5rem 1rem;
 }
-
+@media only screen and (max-width: 800px){
+    .section-5 h2{
+        margin: 1rem 2rem 1rem;
+    }
+}
 .section-5 h3{
     margin: 1rem 0rem 2rem;
     font-size: calc(1em + 1vw);
@@ -452,12 +575,22 @@ header{
 .section-6 h2{
     margin: 4rem 5rem 2.5rem;
 }
+@media only screen and (max-width: 800px){
+    .section-6 h2{
+        margin: 4rem 2rem 2.5rem;
+    }
+}
 
     .section-6 p{
         max-width: 80vw;
         font-size: calc(1em + .6vw);
         color: var(--color-2);
         margin: 0 5rem 2rem;
+    }
+    @media only screen and (max-width: 800px){
+        .section-6 p{
+            margin: 0 2rem 2rem;
+        }
     }
 
     .section-6 .container{
@@ -468,7 +601,15 @@ header{
         gap: 4rem;
         width: 100%;
         margin: 3rem 5rem 5rem;
+        flex-wrap: wrap;
     }
+@media only screen and (max-width: 960px) {
+    .section-6 .container{
+        align-items: flex-start;
+        margin: 0;
+        margin-left: 2rem;
+    }
+}
     .section-6 .container .service-cards{
         display: flex;
         max-width: 80vw;
@@ -588,6 +729,12 @@ header{
         right: 20px;
         max-width: none;
         margin: 2rem 2rem 1rem;
+    }
+    @media only screen and (max-width: 960px){
+        .section-6 .price-calculator-wrapper .service-card{
+            max-width: 300px;
+            margin: 1rem 0.5rem;
+        }
     }
     .section-6 .price-calculator-wrapper .service-card .service-card-title .extras-list{
         display: flex;
