@@ -34,6 +34,15 @@
     @stack('head')
     <!-- Phosphor Icons (web) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VX4252T3K9"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-VX4252T3K9');
+    </script>
 </head>
 <body>
     @yield('content')
