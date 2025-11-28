@@ -1,6 +1,8 @@
 @extends('layouts.public')
 
-@section('title', 'Aurora Pets')
+@section('title', 'Aurora Pets - Urnas Ecológicas para Mascotas en Ecuador')
+
+@section('meta_description', 'Celebra la vida de tu mascota con Aurora. La primera urna 100% compostable que convierte las cenizas en su planta favorita. Servicios en Quito, Guayaquil y Cuenca.')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/home-style.css') }}">

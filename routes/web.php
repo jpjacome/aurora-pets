@@ -13,7 +13,7 @@ use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\UserController;
 
 Route::get('/', function () {
-    return view('home');
+    return view('home2');
 });
 
 Route::get('/plantscan', function () {
@@ -23,9 +23,9 @@ Route::get('/plantscan', function () {
 // Public API: fetch plant description by name or slug
 Route::get('/plants/description', [App\Http\Controllers\PlantDescriptionController::class, 'show']);
 
-// Simple demo page (home2) with fullscreen video and sections
+// Original home page
 Route::get('/home2', function () {
-    return view('home2');
+    return view('home');
 });
 
 Route::get('/urna', function () {

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <!-- Home Page -->
+    <url>
+        <loc>https://auroraurn.pet/</loc>
+        <lastmod>2025-11-27</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+        <xhtml:link rel="alternate" hreflang="es" href="https://auroraurn.pet/" />
+    </url>
+    
+    <!-- PlantScan -->
+    <url>
+        <loc>https://auroraurn.pet/plantscan</loc>
+        <lastmod>2025-11-27</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.9</priority>
+        <xhtml:link rel="alternate" hreflang="es" href="https://auroraurn.pet/plantscan" />
+    </url>
+</urlset>

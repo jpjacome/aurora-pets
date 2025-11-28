@@ -489,3 +489,26 @@ footer img{
 }
 
 /* #endregion LOGIN */
+
+
+
+
+footer{
+    padding: 5px 0;
+}
+
+footer #footer-logo-imageb{
+    display: none;
+}
+
+
+@media only screen and (max-width: 480px){
+  footer #footer-logo-image{
+      display: none;
+  }
+  footer #footer-logo-imageb{
+      display: block;
+      height: 30px;
+      margin-left: 2rem;
+  }
+}

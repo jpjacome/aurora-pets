@@ -26,6 +26,7 @@ header{
     align-items: center;
     justify-content: center;
     background: transparent;
+    overflow-x: hidden;
 }
 @media only screen and (max-width: 800px){
     .section{
@@ -143,6 +144,20 @@ header{
     max-width: 70vw;
     max-height: 60vh;
     border-radius: 8px;
+}
+#home2-loader #loader-image{
+    display: none;
+}
+@media only screen and (max-width: 800px){
+    #home2-loader #home2-loader-video{
+        display: none;
+    }
+    #home2-loader #loader-image{
+        display: block;
+        width: 600px;
+        max-width: 80vw;
+        height: auto;
+    }
 }
 
 /* Ensure transparent video is composited correctly when supported */
@@ -608,6 +623,7 @@ header{
         align-items: flex-start;
         margin: 0;
         margin-left: 2rem;
+        margin-bottom: 5rem;
     }
 }
     .section-6 .container .service-cards{
@@ -658,7 +674,7 @@ header{
 }
 .service-card-title {
     font-size: clamp(16px, 1.5rem, 4vw);
-    font-weight: 700;
+    font-weight: 400;
     color: var(--color-2);
     margin-bottom: 0.7rem;
 }
@@ -711,6 +727,7 @@ header{
     .section-6 .price-calculator-wrapper select{
         background-color: var(--color-1);
         width: 400px;
+        max-width: 80vw;
         line-height: 2em;
         height: 2em;
         font-size: 1.5em;
@@ -770,13 +787,8 @@ header{
     .section-6 .price-calculator-wrapper .price-fee-control .card-fee-label{
         display: flex;
         align-items: flex-end;
-        font-size: clamp(12px, 1.5vw, 2rem);
+        font-size: clamp(16px, 1.5vw, 2rem);
         color: var(--color-2);
     }
 
 
-
-
-footer{
-    padding: 5px 0;
-}

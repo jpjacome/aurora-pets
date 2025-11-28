@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="@yield('meta_description', 'Aurora ofrece servicios funerarios dignos para mascotas en Ecuador. Urnas biodegradables que transforman las cenizas en plantas. Cremación en Quito, Guayaquil y Cuenca.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'urnas mascotas, cremación mascotas Ecuador, urna biodegradable, servicios funerarios mascotas, Quito, Guayaquil, Cuenca')">
     <title>@yield('title', 'Aurora Pets')</title>
     
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ asset('assets/home/imgs/icono1.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
     
     <!-- Stylesheets -->
     <!-- Global styles (loaded for all pages) -->

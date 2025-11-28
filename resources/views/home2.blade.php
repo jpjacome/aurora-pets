@@ -1,13 +1,15 @@
 @extends('layouts.public')
 
-@section('title', 'Aurora — Home2')
+@section('title', 'Aurora - Urnas Ecológicas para Mascotas en Ecuador')
+
+@section('meta_description', 'Celebra la vida de tu mascota con Aurora. La primera urna 100% compostable que convierte las cenizas en su planta favorita. Servicios en Quito, Guayaquil y Cuenca.')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/aurora-general.css') }}">
     <link rel="stylesheet" href="{{ asset('css/home2.css') }}">
 @endpush
 
-@section('content')
+    @section('content')
 
     @include('partials.header')
 
@@ -26,6 +28,7 @@
                 <source src="{{ asset('assets/vids/1.webm') }}" type="video/webm">
                 Your browser does not support the video tag.
             </video>
+            <img id="loader-image" src="{{ asset('assets/logo4.png') }}" alt="Aurora logo">
             <div class="home2-loader-caption" role="status" aria-live="polite">
                 <span class="loading-text">Loading</span>
                 <span class="loading-dots" aria-hidden="true">
@@ -82,7 +85,7 @@
                 <div id="page-4" class="inner">
                     <div class='scan-container'>
                             <p>Descubre cuál es la planta favorita de tu mascota</p>
-                            <button class="scan-button">Realizar test</button>               
+                            <a href="/plantscan"><button class="scan-button">Realizar test</button></a>               
                     </div>
                 </div>
 
@@ -193,9 +196,9 @@
 <footer>
 
     <div class="container fade-in">
-    <img src="{{ asset('assets/logo-hor.png') }}" alt="">
+    <img id="footer-logo-image" src="{{ asset('assets/logo-hor.png') }}" alt="">
+    <img id="footer-logo-imageb" src="{{ asset('assets/logo4.png') }}" alt="">
     <div class="info">
-        <p>Quito, Ecuador.</p>
         <p>+593 9 9784 402</p>
         <p>info@aurorapets.com</p>
     </div>
