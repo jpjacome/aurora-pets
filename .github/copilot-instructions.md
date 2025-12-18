@@ -84,7 +84,75 @@ Development Tools: Laravel Telescope, Pulse, Tinker, Pint
 - Use factories for testing
 - Enable timestamps on models
 - Use JSON casting for complex data
- - Use the global CSS variables defined in `public/css/aurora-general.css` for all styling (colors, typography, spacing, radii, shadows, transitions, z-index). This keeps visual consistency across components and views.
+- Use the global CSS variables defined in `public/css/aurora-general.css` for all styling (colors, typography, spacing, radii, shadows, transitions, z-index). This keeps visual consistency across components and views.
+
+### Admin Styling Guidelines & Best Practices
+
+**CRITICAL CSS Rules for Admin Interface:**
+
+1. **Input Field Width Management**
+   - ALWAYS add `box-sizing: border-box;` to inputs with `width: 100%`
+   - Without box-sizing, padding and borders make elements overflow their containers
+   - Example:
+     ```css
+     .my-input {
+         width: 100%;
+         padding: 0.75rem;
+         border: 1px solid var(--color-1);
+         box-sizing: border-box; /* REQUIRED */
+     }
+     ```
+
+2. **Color Consistency Rules**
+   - **Dark backgrounds** (using `var(--color-2)` - dark green):
+     - Text color: `var(--color-3)` (light green)
+     - Secondary text: `rgba(220, 255, 214, 0.7)` or `rgba(220, 255, 214, 0.6)`
+     - Placeholders: `rgba(220, 255, 214, 0.4)`
+     - Borders: `rgba(220, 255, 214, 0.1)` to `rgba(220, 255, 214, 0.2)`
+     - Input backgrounds: `rgba(220, 255, 214, 0.05)` or `rgba(0, 0, 0, 0.2)`
+     
+   - **Light/Orange backgrounds** (using `var(--color-1)` - orange):
+     - Text color: `#000` or dark colors for contrast
+     - Never use `var(--color-3)` on orange backgrounds
+     
+   - **Select dropdowns on dark backgrounds**:
+     ```css
+     select {
+         background: rgba(220, 255, 214, 0.05);
+         color: var(--color-3);
+     }
+     select option {
+         background: white;
+         color: #000; /* Options need dark text */
+     }
+     ```
+
+3. **Admin Panel Backgrounds**
+   - Primary panels/cards: `var(--color-2)` (dark green)
+   - Never use plain `white` or `#f8f9fa` for admin panels
+   - Use semi-transparent overlays for depth: `rgba(0, 0, 0, 0.1)` to `rgba(0, 0, 0, 0.3)`
+
+4. **Form Elements on Dark Backgrounds**
+   - Inputs must have:
+     - `background: rgba(220, 255, 214, 0.05);`
+     - `color: var(--color-3);`
+     - `border: 1px solid var(--color-1);`
+   - Focus states:
+     - `background: rgba(220, 255, 214, 0.1);`
+     - `box-shadow: 0 0 0 3px rgba(254, 141, 44, 0.1);`
+
+5. **Dashboard Stat Cards**
+   - Use existing `.dashboard-grid` and `.dashboard-card` classes
+   - Never create new card styles - maintain consistency
+   - Structure: `.dashboard-card-header` > `.dashboard-card-body` > `.dashboard-stat-value`
+
+**Common Styling Mistakes to Avoid:**
+- ❌ Using `width: 100%` without `box-sizing: border-box`
+- ❌ Using dark text (`#333`, `#666`, `color: black`) on dark green backgrounds
+- ❌ Using `var(--color-3)` text on `var(--color-1)` backgrounds
+- ❌ Creating white/light background panels in admin area
+- ❌ Forgetting to style placeholder text on dark backgrounds
+- ❌ Not styling select dropdown options (they need light backgrounds even on dark selects)
 
 ### File Upload Patterns
 - Store files in `public/storage` with symbolic links

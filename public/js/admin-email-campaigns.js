@@ -123,13 +123,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const recipientsItems = document.getElementById('recipientsItems');
     const manualEmailsHidden = document.getElementById('manual_emails_hidden');
     
-    let selectedClients = new Map(); // Store selected clients: id => {id, name, email}
+    // Make these global so they can be accessed from other pages (like show.blade.php)
+    window.selectedClients = window.selectedClients || new Map(); // Store selected clients: id => {id, name, email}
+    let selectedClients = window.selectedClients;
     let currentClientsPage = 1;
     let searchTimeout = null;
     let manualRecipients = [];
 
-    // Client selector modal functions
-    async function loadModalClients(page = 1, search = '') {
+    // Client selector modal functions - make global
+    window.loadModalClients = async function(page = 1, search = '') {
         if (!modalClientsList) return;
         
         try {
@@ -175,9 +177,9 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error loading clients:', error);
             modalClientsList.innerHTML = '<p style="padding: 1rem; text-align: center; color: #999;">Failed to load clients</p>';
         }
-    }
+    };
     
-    function renderModalPagination(data) {
+    window.renderModalPagination = function(data) {
         if (!modalPagination) return;
         
         modalPagination.innerHTML = '';
@@ -207,15 +209,15 @@ document.addEventListener('DOMContentLoaded', function () {
         nextBtn.disabled = data.current_page === data.last_page;
         nextBtn.onclick = () => loadModalClients(data.current_page + 1, clientSearch.value);
         modalPagination.appendChild(nextBtn);
-    }
+    };
     
-    function updateSelectedCount() {
+    window.updateSelectedCount = function() {
         if (selectedCount) {
             selectedCount.textContent = `${selectedClients.size} selected`;
         }
-    }
+    };
     
-    function updateSelectedClientsList() {
+    window.updateSelectedClientsList = function() {
         if (!selectedClientsList || !selectedClientsInputs) return;
         
         selectedClientsInputs.innerHTML = '';
@@ -247,15 +249,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 selectedClientsInputs.appendChild(input);
             });
         }
-    }
+    };
     
     // Make removeSelectedClient global
     window.removeSelectedClient = function(clientId) {
         selectedClients.delete(clientId);
         updateSelectedClientsList();
         // If modal is open, update checkboxes
+        const modalClientsList = document.getElementById('modalClientsList');
+        const clientSelectorModal = document.getElementById('clientSelectorModal');
         if (clientSelectorModal && clientSelectorModal.classList.contains('active')) {
-            const checkbox = modalClientsList.querySelector(`input[value="${clientId}"]`);
+            const checkbox = modalClientsList?.querySelector(`input[value="${clientId}"]`);
             if (checkbox) checkbox.checked = false;
             updateSelectedCount();
         }

@@ -86,6 +86,11 @@
                         <a href="/admin/clients/{{ $c->id }}/edit" class="edit-client-btn" title="Edit Client" onclick="event.stopPropagation();">
                             <i class="ph ph-pencil-simple"></i>
                         </a>
+                        @if($c->campaigns_count > 0)
+                            <span class="badge badge-count" title="{{ $c->campaigns_count }} email campaign(s)" style="font-size: 0.75rem;">
+                                📧 {{ $c->campaigns_count }}
+                            </span>
+                        @endif
                     </div>
                     <small class="muted">{{ $c->created_at->diffForHumans() }}</small>
                 </div>

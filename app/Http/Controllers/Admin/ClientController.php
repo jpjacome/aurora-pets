@@ -13,7 +13,12 @@ class ClientController extends Controller
      */
     public function edit($id)
     {
-        $client = Client::withCount('pets')->findOrFail($id);
+        $client = Client::withCount('pets')
+            ->with(['campaigns' => function($query) {
+                $query->select('email_campaigns.id', 'email_campaigns.name', 'email_campaigns.subject', 'email_campaigns.status')
+                      ->withPivot('status', 'delivered_at', 'opened_at', 'clicked_at');
+            }])
+            ->findOrFail($id);
         
         return view('admin.clients.edit', compact('client'));
     }

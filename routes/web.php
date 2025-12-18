@@ -100,6 +100,15 @@ Route::middleware([EnsureAdmin::class])->group(function () {
     Route::post('/admin/settings/profile', [AdminController::class, 'updateProfile'])->name('admin.settings.profile');
     Route::post('/admin/settings/password', [AdminController::class, 'updatePassword'])->name('admin.settings.password');
     
+    // WhatsApp Chatbot
+    Route::get('/admin/chatbot', [\App\Http\Controllers\Admin\ChatbotController::class, 'index'])->name('admin.chatbot.index');
+    Route::get('/admin/chatbot/conversations/{id}', [\App\Http\Controllers\Admin\ChatbotController::class, 'show'])->name('admin.chatbot.show');
+    Route::post('/admin/chatbot/conversations/{id}/send', [\App\Http\Controllers\Admin\ChatbotController::class, 'sendMessage'])->name('admin.chatbot.send');
+    Route::post('/admin/chatbot/conversations/{id}/toggle-mode', [\App\Http\Controllers\Admin\ChatbotController::class, 'toggleMode'])->name('admin.chatbot.toggleMode');
+    Route::post('/admin/chatbot/conversations/{id}/update-lead-score', [\App\Http\Controllers\Admin\ChatbotController::class, 'updateLeadScore'])->name('admin.chatbot.updateLeadScore');
+    Route::post('/admin/chatbot/conversations/{id}/archive', [\App\Http\Controllers\Admin\ChatbotController::class, 'archive'])->name('admin.chatbot.archive');
+    Route::get('/admin/chatbot/conversations/{id}/export', [\App\Http\Controllers\Admin\ChatbotController::class, 'export'])->name('admin.chatbot.export');
+    
     // Seeder route (temporary - remove after use)
     Route::get('/admin/run-plants-seeder', function () {
         try {

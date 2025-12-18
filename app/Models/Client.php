@@ -43,4 +43,29 @@ class Client extends Model
     {
         return $this->hasMany(Pet::class);
     }
+
+    /**
+     * Get the email campaigns this client has participated in.
+     * Uses the email_messages pivot table.
+     */
+    public function campaigns()
+    {
+        return $this->belongsToMany(
+            EmailCampaign::class,
+            'email_messages',
+            'client_id',
+            'campaign_id'
+        )
+        ->withPivot('status', 'delivered_at', 'opened_at', 'clicked_at')
+        ->withTimestamps()
+        ->orderBy('email_messages.created_at', 'desc');
+    }
+
+    /**
+     * Get all email messages sent to this client.
+     */
+    public function emailMessages()
+    {
+        return $this->hasMany(EmailMessage::class, 'client_id');
+    }
 }

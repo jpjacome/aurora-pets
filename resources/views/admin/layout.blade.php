@@ -18,11 +18,13 @@
 <body>
     <header class="admin-header">
         <div class="admin-left">
-            <img src="/assets/home/imgs/logo4.png" alt="logo" class="admin-logo">
+            <a href="/">
+                <img src="/assets/home/imgs/logo4.png" alt="logo" class="admin-logo">
+            </a>
 
             <nav class="admin-nav">
-                <a href="/">Homepage</a>
                 <a href="/admin">Dashboard</a>
+                <a href="/admin/chatbot">Chatbot</a>
                 <a href="/admin/tests">Tests</a>
                 <a href="/admin/clients">Clients</a>
                 <a href="/admin/email-campaigns">Email Campaigns</a>
@@ -64,8 +66,8 @@
         <div class="mobile-menu-content">
             <button id="adminMobileMenuClose" class="mobile-menu-close" aria-label="Close menu"><i class="ph ph-x"></i></button>
             <nav class="mobile-nav">
-                <a href="/">Homepage</a>
                 <a href="/admin">Dashboard</a>
+                <a href="/admin/chatbot">Chatbot</a>
                 <a href="/admin/tests">Tests</a>
                 <a href="/admin/clients">Clients</a>
                 <a href="/admin/email-campaigns">Email Campaigns</a>

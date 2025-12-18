@@ -28,4 +28,21 @@ class EmailCampaign extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * Get the clients that participated in this campaign.
+     * Uses the email_messages pivot table.
+     */
+    public function clients()
+    {
+        return $this->belongsToMany(
+            Client::class,
+            'email_messages',
+            'campaign_id',
+            'client_id'
+        )
+        ->withPivot('status', 'delivered_at', 'opened_at', 'clicked_at')
+        ->withTimestamps()
+        ->distinct();
+    }
 }

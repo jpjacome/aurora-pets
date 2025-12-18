@@ -98,6 +98,80 @@
             </div>
         @endif
 
+        @if($client->campaigns->count() > 0)
+            <div class="form-section">
+                <h2><i class="ph ph-envelope"></i> Campaign History</h2>
+                <p class="muted" style="margin-bottom: 1rem;">This client has participated in {{ $client->campaigns->count() }} email campaign(s).</p>
+                
+                <div style="overflow-x: auto;">
+                    <table class="admin-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Campaign</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Sent</th>
+                                <th>Opened</th>
+                                <th>Clicked</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($client->campaigns as $campaign)
+                                <tr>
+                                    <td>
+                                        <a href="{{ route('admin.email-campaigns.show', $campaign->id) }}" style="font-weight: 600;">
+                                            {{ $campaign->name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ $campaign->subject ?? '—' }}</td>
+                                    <td>
+                                        <span class="status-badge status-{{ $campaign->pivot->status }}">
+                                            {{ ucfirst($campaign->pivot->status) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($campaign->pivot->delivered_at)
+                                            <i class="ph ph-check" style="color: #28a745;"></i>
+                                            {{ $campaign->pivot->delivered_at->format('M d, Y H:i') }}
+                                        @else
+                                            <span style="color: #999;">—</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($campaign->pivot->opened_at)
+                                            <i class="ph ph-eye" style="color: #17a2b8;"></i>
+                                            {{ $campaign->pivot->opened_at->format('M d, Y H:i') }}
+                                        @else
+                                            <span style="color: #999;">—</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($campaign->pivot->clicked_at)
+                                            <i class="ph ph-hand-pointing" style="color: #fe8d2c;"></i>
+                                            {{ $campaign->pivot->clicked_at->format('M d, Y H:i') }}
+                                        @else
+                                            <span style="color: #999;">—</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('admin.email-campaigns.show', $campaign->id) }}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">
+                                            <i class="ph ph-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @else
+            <div class="info-section">
+                <h2><i class="ph ph-envelope"></i> Campaign History</h2>
+                <p class="muted">This client has not participated in any email campaigns yet.</p>
+            </div>
+        @endif
+
         <div class="form-actions">
             <a href="{{ route('admin.clients') }}" class="btn-secondary">Cancel</a>
             <button type="submit" class="btn-primary">

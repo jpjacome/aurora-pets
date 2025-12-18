@@ -76,7 +76,8 @@ class AdminController
             $perPage = min($total ?: 1, 5000);
         }
         $q = trim((string) $request->input('q', ''));
-        $query = Client::with(['pets.plant']); // Eager load pets and their plants
+        $query = Client::with(['pets.plant']) // Eager load pets and their plants
+                       ->withCount('campaigns'); // Count campaigns for badge
         
         if ($q !== '') {
             $query->where(function($w) use ($q) {

@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora WhatsApp Bot - Implementation Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f7fa;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #1a1a2e;
+            color: white;
+            padding: 30px 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h1 {
+            padding: 0 25px 20px;
+            font-size: 20px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+        }
+
+        .nav-section {
+            margin-bottom: 5px;
+        }
+
+        .nav-title {
+            padding: 12px 25px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            padding: 10px 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: #16213e;
+            border-left-color: #25D366;
+        }
+
+        .nav-item.active {
+            background: #16213e;
+            border-left-color: #25D366;
+            color: #25D366;
+        }
+
+        .nav-item .phase-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #333;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-size: 12px;
+        }
+
+        .nav-item.active .phase-number {
+            background: #25D366;
+            color: #1a1a2e;
+        }
+
+        /* Main Content */
+        .content {
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .phase {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .phase.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .phase-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .phase-header h2 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .phase-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .phase-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .section h3 {
+            color: #1a1a2e;
+            font-size: 24px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .section h4 {
+            color: #333;
+            font-size: 18px;
+            margin: 20px 0 10px;
+        }
+
+        .step-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .step-list li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 15px;
+        }
+
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .code-block {
+            background: #1a1a2e;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .code-filename {
+            color: #888;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .copy-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #20ba5a;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            color: #1565c0;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+
+        .checklist {
+            list-style: none;
+        }
+
+        .checklist li {
+            padding: 10px;
+            margin-bottom: 5px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .checklist li:hover {
+            background: #e9ecef;
+        }
+
+        .checklist li::before {
+            content: "☐";
+            margin-right: 10px;
+            font-size: 18px;
+            color: #999;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-time {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-cost {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #25D366;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #20ba5a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e0e0e0;
+            position: fixed;
+            top: 0;
+            left: 300px;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                height: auto;
+            }
+
+            .progress-bar {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h1>🤖 Aurora WhatsApp Bot</h1>
+            
+            <div class="nav-section">
+                <div class="nav-title">Setup</div>
+                <div class="nav-item active" data-phase="overview">
+                    <span class="phase-number">📋</span> Overview
+                </div>
+                <div class="nav-item" data-phase="phase1">
+                    <span class="phase-number">1</span> Meta WhatsApp
+                </div>
+                <div class="nav-item" data-phase="phase2">
+                    <span class="phase-number">2</span> Groq AI
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">Backend</div>
+                <div class="nav-item" data-phase="phase3">
+                    <span class="phase-number">3</span> Laravel Setup
+                </div>
+                <div class="nav-item" data-phase="phase4">
+                    <span class="phase-number">4</span> Models
+                </div>
+                <div class="nav-item" data-phase="phase5">
+                    <span class="phase-number">5</span> Services
+                </div>
+                <div class="nav-item" data-phase="phase6">
+                    <span class="phase-number">6</span> Webhook
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">Frontend</div>
+                <div class="nav-item" data-phase="phase7">
+                    <span class="phase-number">7</span> Deploy Webhook
+                </div>
+                <div class="nav-item" data-phase="phase8">
+                    <span class="phase-number">8</span> Admin Dashboard
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">Launch</div>
+                <div class="nav-item" data-phase="phase9">
+                    <span class="phase-number">9</span> Testing
+                </div>
+                <div class="nav-item" data-phase="phase10">
+                    <span class="phase-number">10</span> Production
+                </div>
+                <div class="nav-item" data-phase="phase11">
+                    <span class="phase-number">11</span> Maintenance
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">Resources</div>
+                <div class="nav-item" data-phase="appendix">
+                    <span class="phase-number">📚</span> Reference
+                </div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <!-- Overview -->
+            <div class="phase active" id="overview">
+                <div class="phase-header">
+                    <h2>Aurora WhatsApp AI Bot</h2>
+                    <div class="phase-meta">
+                        <span>⏱️ 15-20 hours total</span>
+                        <span>💰 $0/month (up to 1,000 messages)</span>
+                        <span>🚀 Production Ready</span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>📋 Project Overview</h3>
+                    <p><strong>What you're building:</strong> A fully automated WhatsApp chatbot for Aurora that uses AI to respond to customer inquiries, qualifies leads, and includes a custom admin dashboard for monitoring and manual intervention.</p>
+
+                    <h4>Tech Stack</h4>
+                    <ul>
+                        <li><strong>WhatsApp:</strong> Meta Business API (Official)</li>
+                        <li><strong>AI:</strong> Groq (Llama 3.3 70B) - FREE</li>
+                        <li><strong>Backend:</strong> Laravel 11.x + PHP 8.3</li>
+                        <li><strong>Database:</strong> MySQL 8.0</li>
+                        <li><strong>Frontend:</strong> Blade + Vanilla JavaScript</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>✨ Features</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td>🤖 Automated Responses</td>
+                                <td>AI answers customer questions 24/7 using Aurora's service info</td>
+                            </tr>
+                            <tr>
+                                <td>👤 Manual Takeover</td>
+                                <td>Toggle bot/manual mode per conversation anytime</td>
+                            </tr>
+                            <tr>
+                                <td>📊 Lead Scoring</td>
+                                <td>Automatically qualifies leads (hot/warm/cold) based on signals</td>
+                            </tr>
+                            <tr>
+                                <td>💬 Admin Dashboard</td>
+                                <td>View all conversations, send manual messages, monitor activity</td>
+                            </tr>
+                            <tr>
+                                <td>💾 Full History</td>
+                                <td>Every message stored with timestamps and context</td>
+                            </tr>
+                            <tr>
+                                <td>🔔 Smart Notifications</td>
+                                <td>Alerts for high-quality leads (future enhancement)</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>⏱️ Time Breakdown</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <tr>
+                                <th>Phase</th>
+                                <th>Task</th>
+                                <th>Time</th>
+                            </tr>
+                            <tr>
+                                <td>1-2</td>
+                                <td>Meta + Groq Setup</td>
+                                <td><span class="badge badge-time">2.5 hours</span></td>
+                            </tr>
+                            <tr>
+                                <td>3-5</td>
+                                <td>Laravel Backend (Models, Services)</td>
+                                <td><span class="badge badge-time">8 hours</span></td>
+                            </tr>
+                            <tr>
+                                <td>6-7</td>
+                                <td>Webhook & Deployment</td>
+                                <td><span class="badge badge-time">3 hours</span></td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td>Admin Dashboard UI</td>
+                                <td><span class="badge badge-time">6 hours</span></td>
+                            </tr>
+                            <tr>
+                                <td>9-10</td>
+                                <td>Testing & Production</td>
+                                <td><span class="badge badge-time">3 hours</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>💰 Cost Analysis</h3>
+                    <div class="alert alert-success">
+                        <strong>Total Monthly Cost: $0</strong> (for first 1,000 conversations)
+                    </div>
+
+                    <h4>Breakdown:</h4>
+                    <ul>
+                        <li><strong>Meta WhatsApp API:</strong> First 1,000 conversations FREE/month, then $0.005/message</li>
+                        <li><strong>Groq AI:</strong> Completely FREE (no limits currently)</li>
+                        <li><strong>Hosting:</strong> You already have Aurora's server</li>
+                        <li><strong>Dashboard:</strong> Custom built (no SaaS fees)</li>
+                    </ul>
+
+                    <div class="alert alert-info">
+                        <strong>ROI:</strong> One client project ($600-1,200) pays for an entire year of operation (if you exceed free tier)
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🎯 What You'll Have When Done</h3>
+                    <ul class="checklist">
+                        <li>WhatsApp bot that responds automatically using AI</li>
+                        <li>Custom admin panel to view all conversations</li>
+                        <li>Ability to take over and respond manually anytime</li>
+                        <li>Lead quality scoring (hot/warm/cold)</li>
+                        <li>Complete conversation history</li>
+                        <li>Production-ready system on your server</li>
+                        <li>No monthly fees (within 1,000 conversations)</li>
+                    </ul>
+                </div>
+
+                <div class="nav-buttons">
+                    <div></div>
+                    <button class="btn btn-primary" onclick="navigatePhase('phase1')">
+                        Start Phase 1: Meta WhatsApp →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Phase 1 -->
+            <div class="phase" id="phase1">
+                <div class="phase-header">
+                    <h2>Phase 1: Meta WhatsApp Setup</h2>
+                    <div class="phase-meta">
+                        <span>⏱️ 2 hours</span>
+                        <span>💰 Free</span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Step 1: Create Meta Developer Account</h3>
+                    <ol class="step-list">
+                        <li>Go to <strong>developers.facebook.com</strong></li>
+                        <li>Click "My Apps" → "Create App"</li>
+                        <li>Select app type: <strong>"Business"</strong></li>
+                        <li>Fill in:
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>App Name: "Aurora WhatsApp Bot"</li>
+                                <li>App Contact Email: your email</li>
+                                <li>Business Portfolio: Select/create your business</li>
+                            </ul>
+                        </li>
+                        <li>Click "Create App"</li>
+                    </ol>
+                </div>
+
+                <div class="section">
+                    <h3>Step 2: Add WhatsApp Product</h3>
+                    <ol class="step-list">
+                        <li>In app dashboard, find "WhatsApp" in products list</li>
+                        <li>Click "Set up"</li>
+                        <li>Navigate to WhatsApp → "Getting Started"</li>
+                    </ol>
+                </div>
+
+                <div class="section">
+                    <h3>Step 3: Collect Credentials</h3>
+                    <div class="alert alert-warning">
+                        <strong>Important:</strong> Copy these values exactly - you'll need them for Laravel .env file
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-filename">Required Credentials</span>
+                        </div>
+                        <pre>
+1. WHATSAPP_API_TOKEN
+   Location: WhatsApp > Getting Started > "Temporary access token"
+   Copy: The long token string
+
+2. WHATSAPP_PHONE_NUMBER_ID
+   Location: Below the test number
+   Format: 123456789012345
+
+3. WHATSAPP_BUSINESS_ACCOUNT_ID
+   Location: WhatsApp > API Setup
+   Copy: Your WABA ID
+
+4. WHATSAPP_APP_ID
+   Location: Settings > Basic
+   Copy: App ID
+
+5. WHATSAPP_APP_SECRET
+   Location: Settings > Basic > "Show"
+   Copy: App Secret
+
+6. WHATSAPP_WEBHOOK_VERIFY_TOKEN
+   Create: Any random secure string
+   Example: aurora_webhook_secure_2024
+                        </pre>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Step 4: Test WhatsApp Connection</h3>
+                    <ol class="step-list">
+                        <li>In WhatsApp > Getting Started</li>
+                        <li>Click "Add phone number" under "To"</li>
+                        <li>Enter your WhatsApp number: +593XXXXXXXXX</li>
+                        <li>Send the code shown to Meta's test number</li>
+                        <li>You should receive "Hello World" message</li>
+                    </ol>
+
+                    <div class="alert alert-success">
+                        <strong>✅ Success:</strong> If you received the message, WhatsApp setup is working!
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Note:</strong> Webhook configuration comes later in Phase 7 after Laravel is set up
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn btn-secondary" onclick="navigatePhase('overview')">
+                        ← Back to Overview
+                    </button>
+                    <button class="btn btn-primary" onclick="navigatePhase('phase2')">
+                        Next: Groq AI Setup →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Phase 2 -->
+            <div class="phase" id="phase2">
+                <div class="phase-header">
+                    <h2>Phase 2: Groq AI Setup</h2>
+                    <div class="phase-meta">
+                        <span>⏱️ 30 minutes</span>
+                        <span>💰 Free Forever</span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Step 1: Create Groq Account</h3>
+                    <ol class="step-list">
+                        <li>Go to <strong>console.groq.com</strong></li>
+                        <li>Sign up with email or GitHub</li>
+                        <li>Verify your email</li>
+                        <li>Login to dashboard</li>
+                    </ol>
+                </div>
+
+                <div class="section">
+                    <h3>Step 2: Generate API Key</h3>
+                    <ol class="step-list">
+                        <li>In Groq console, go to "API Keys"</li>
+                        <li>Click "Create API Key"</li>
+                        <li>Name it: "Aurora WhatsApp Bot"</li>
+                        <li>Copy the key (starts with <code>gsk_...</code>)</li>
+                    </ol>
+
+                    <div class="alert alert-danger">
+                        <strong>⚠️ Important:</strong> Save the key immediately! You can't see it again after closing.
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Step 3: Test Groq API</h3>
+                    <p>Quick test to verify it works:</p>
+
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-filename">Terminal</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre>curl "https://api.groq.com/openai/v1/chat/completions" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_GROQ_API_KEY" \
+  -d '{
+    "model": "llama-3.3-70b-versatile",
+    "messages": [{"role": "user", "content": "Hello!"}],
+    "temperature": 0.7,
+    "max_tokens": 100
+  }'</pre>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <strong>✅ Success:</strong> If you get JSON response with AI's reply, Groq is working!
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Add to .env File</h3>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-filename">.env</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre>GROQ_API_KEY=gsk_your_key_here</pre>
+                    </div>
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn btn-secondary" onclick="navigatePhase('phase1')">
+                        ← Back to Phase 1
+                    </button>
+                    <button class="btn btn-primary" onclick="navigatePhase('phase3')">
+                        Next: Laravel Setup →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Placeholder for remaining phases -->
+            <div class="phase" id="phase3">
+                <div class="phase-header">
+                    <h2>Phase 3: Laravel Project Setup</h2>
+                    <div class="phase-meta">
+                        <span>⏱️ 3 hours</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>Coming up:</strong> Database migrations, configuration files, and environment setup. This content continues with the complete implementation details from the markdown file.
+                </div>
+
+                <div class="section">
+                    <h3>Download Complete Guide</h3>
+                    <p>For the full implementation with all phases (3-11), code files, and detailed instructions:</p>
+                    <ul>
+                        <li>The complete guide is available as a markdown file</li>
+                        <li>Includes all migrations, models, services, controllers, and views</li>
+                        <li>Copy-paste ready code for every file</li>
+                        <li>Detailed troubleshooting and testing procedures</li>
+                    </ul>
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn btn-secondary" onclick="navigatePhase('phase2')">
+                        ← Back to Phase 2
+                    </button>
+                    <button class="btn btn-primary" onclick="navigatePhase('appendix')">
+                        View Quick Reference →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Appendix -->
+            <div class="phase" id="appendix">
+                <div class="phase-header">
+                    <h2>📚 Quick Reference</h2>
+                </div>
+
+                <div class="section">
+                    <h3>Complete .env Configuration</h3>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-filename">.env</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre># WhatsApp Meta API
+WHATSAPP_API_TOKEN=your_permanent_access_token
+WHATSAPP_PHONE_NUMBER_ID=123456789012345
+WHATSAPP_BUSINESS_ACCOUNT_ID=your_waba_id
+WHATSAPP_APP_ID=your_app_id
+WHATSAPP_APP_SECRET=your_app_secret
+WHATSAPP_WEBHOOK_VERIFY_TOKEN=aurora_webhook_secure_2024
+WHATSAPP_API_VERSION=v21.0
+
+# Groq AI
+GROQ_API_KEY=gsk_your_key_here
+GROQ_MODEL=llama-3.3-70b-versatile</pre>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Useful Commands</h3>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-filename">Terminal</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre># Run migrations
+php artisan migrate
+
+# Clear caches
+php artisan optimize:clear
+
+# View logs in real-time
+tail -f storage/logs/laravel.log
+
+# Access database console
+php artisan tinker
+
+# Check routes
+php artisan route:list |
