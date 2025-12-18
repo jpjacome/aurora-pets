@@ -286,9 +286,36 @@ class EmailCampaignController extends Controller
     {
         $perPage = 50;
         $page = max(1, (int) $request->query('page', 1));
-        $clients = Client::select('id', 'client', 'email')->orderBy('client')->paginate($perPage, ['*'], 'page', $page);
+        $search = $request->query('search', '');
+        
+        $query = Client::select('id', 'client', 'email')
+            ->with('pets:id,client_id,name'); // Eager load pets
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('client', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%')
+                  ->orWhereHas('pets', function($petQuery) use ($search) {
+                      $petQuery->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+        
+        $clients = $query->orderBy('client')->paginate($perPage, ['*'], 'page', $page);
+        
+        // Format data to include pet names
+        $data = $clients->items();
+        $formatted = array_map(function($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->client,
+                'email' => $client->email,
+                'pets' => $client->pets->pluck('name')->toArray()
+            ];
+        }, $data);
+        
         return response()->json([
-            'data' => $clients->items(),
+            'data' => $formatted,
             'current_page' => $clients->currentPage(),
             'last_page' => $clients->lastPage(),
             'next_page_url' => $clients->nextPageUrl(),

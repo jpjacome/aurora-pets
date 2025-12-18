@@ -114,6 +114,12 @@ Route::middleware([EnsureAdmin::class])->group(function () {
     // Admin Email Campaigns
     Route::get('/admin/email-campaigns', [EmailCampaignController::class, 'index'])->name('admin.email-campaigns.index');
     Route::get('/admin/email-campaigns/create', [EmailCampaignController::class, 'create'])->name('admin.email-campaigns.create');
+    
+    // Specific routes BEFORE wildcard {emailCampaign} routes
+    Route::get('/admin/email-campaigns/clients', [EmailCampaignController::class, 'clientsList'])->name('admin.email-campaigns.clients');
+    Route::post('/admin/email-campaigns/preview', [EmailCampaignController::class, 'preview'])->name('admin.email-campaigns.preview');
+    Route::post('/admin/email-campaigns/recipients/preview', [EmailCampaignController::class, 'recipientsPreview'])->name('admin.email-campaigns.recipients.preview');
+    
     Route::post('/admin/email-campaigns', [EmailCampaignController::class, 'store'])->name('admin.email-campaigns.store');
     Route::get('/admin/email-campaigns/{emailCampaign}', [EmailCampaignController::class, 'show'])->name('admin.email-campaigns.show');
     Route::post('/admin/email-campaigns/{emailCampaign}/run', [EmailCampaignController::class, 'run'])->name('admin.email-campaigns.run');
@@ -121,10 +127,7 @@ Route::middleware([EnsureAdmin::class])->group(function () {
     Route::post('/admin/email-campaigns/{emailCampaign}/stop', [EmailCampaignController::class, 'stop'])->name('admin.email-campaigns.stop');
     Route::delete('/admin/email-campaigns/{emailCampaign}', [EmailCampaignController::class, 'destroy'])->name('admin.email-campaigns.destroy');
     Route::get('/admin/email-campaigns/{emailCampaign}/recipients', [EmailCampaignController::class, 'recipients'])->name('admin.email-campaigns.recipients');
-    Route::get('/admin/email-campaigns/clients', [EmailCampaignController::class, 'clientsList'])->name('admin.email-campaigns.clients');
     Route::post('/admin/email-campaigns/{emailCampaign}/resend', [EmailCampaignController::class, 'resendSelected'])->name('admin.email-campaigns.resend');
-    Route::post('/admin/email-campaigns/preview', [EmailCampaignController::class, 'preview'])->name('admin.email-campaigns.preview');
-    Route::post('/admin/email-campaigns/recipients/preview', [EmailCampaignController::class, 'recipientsPreview'])->name('admin.email-campaigns.recipients.preview');
 });
 
 // Public tracking routes

@@ -146,14 +146,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 const div = document.createElement('div');
                 div.className = 'modal-client-item';
                 const isChecked = selectedClients.has(client.id);
+                
+                // Build pet names display
+                const petsDisplay = client.pets && client.pets.length > 0 
+                    ? `<span style="font-size: 0.85rem; color: #fe8d2c;">🐾 ${client.pets.join(', ')}</span>`
+                    : '<span style="font-size: 0.85rem; color: #999;">No pets</span>';
+                
                 div.innerHTML = `
                     <label class="checkbox-label" style="width: 100%; padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem;">
                         <input type="checkbox" class="modal-client-checkbox" value="${client.id}" 
-                               data-name="${client.client}" data-email="${client.email}" 
+                               data-name="${client.name}" data-email="${client.email}" 
                                ${isChecked ? 'checked' : ''}>
                         <div style="flex: 1;">
-                            <strong>${client.client}</strong><br>
-                            <span style="font-size: 0.9rem; color: #666;">${client.email}</span>
+                            <strong>${client.name}</strong><br>
+                            <span style="font-size: 0.9rem; color: #666;">${client.email}</span><br>
+                            ${petsDisplay}
                         </div>
                     </label>
                 `;
