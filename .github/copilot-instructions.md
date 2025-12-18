@@ -4,6 +4,8 @@
 
 **ANALYSIS-ONLY MODE BY DEFAULT**: Unless the user explicitly requests implementation or file changes, ONLY provide analysis, suggestions, and recommendations. NEVER modify files, create new files, or implement changes without explicit user instruction.
 
+**DEPLOYMENT & WORKFLOW CLARIFICATION**: All production updates are applied via FTP (we use FileZilla for uploads). The shared online server also provides a terminal that can be used to run commands on the server when needed; confirm access with the user before attempting remote commands. Development work is done completely locally, and there is a copy of the application hosted online (staging/production) where the prepared artifacts (for example, `vendor/`, compiled assets, and changed files) are uploaded via FTP. Always take backups (files + DB) before performing remote operations and never run destructive database reset commands on production.
+
 **READING BLADE AND HTML FILES**: When analyzing Blade or HTML files, focus on understanding the structure, data bindings, and user interactions. Identify how data flows from controllers to views and note any dynamic elements that may require special handling. Find the head section, if there isn't one, find the component present that has it. Find any external css files and js files. Never do any inline styling, use the external file for all styling without exception.
 
 ## General Laravel Application Guidelines
@@ -99,6 +101,114 @@ Development Tools: Laravel Telescope, Pulse, Tinker, Pint
 - Use environment variables for configuration
 - Compile assets with Vite or Laravel Mix
 - Store images in storage/app/public/
+
+**FTP-first workflow**: If SSH is not available, prepare `vendor/`, compiled frontend assets, and all changed files locally and upload them via FTP (FileZilla). If the hosting control panel or shared server provides a terminal, it may be used to run non-destructive commands (e.g., `php artisan migrate` when necessary) — always confirm permissions and coordinate with the site owner/host. Avoid running any `migrate:fresh`/`migrate:refresh` or other destructive commands on the live server.
+
+### Email Campaign & Webhook System Notes ⚠️
+
+**CRITICAL: Webhook CSRF Exclusion**
+- Webhooks MUST be excluded from CSRF verification in `bootstrap/app.php`:
+  ```php
+  ->withMiddleware(function (Middleware $middleware): void {
+      $middleware->validateCsrfTokens(except: [
+          'webhooks/*',
+      ]);
+  })
+  ```
+- After uploading `bootstrap/app.php`, ALWAYS run: `php artisan optimize:clear` to clear all caches
+- Delete `bootstrap/cache/*.php` files if cache persists
+
+**Status Column & Fillable Arrays**
+- The `status` column must accept 'clicked' value (not just enum)
+- Migration `update_email_messages_status_enum` changes status to `varchar(20)`
+- EmailMessage `$fillable` MUST include: `'delivered_at', 'opened_at', 'clicked_at'`
+- Without these in fillable, webhook updates will be silently ignored
+
+**Click Tracking: Two Mechanisms**
+1. **Brevo Webhooks** (`WebhookController::handleBrevoWebhook`) - External webhook from Brevo
+2. **EmailTrackingController** (`click()` method) - Internal redirect tracking
+
+Both MUST update `status='clicked'` AND `clicked_at=now()` for consistency.
+
+**Common Webhook Issues & Solutions**
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| 419 Page Expired | CSRF blocking webhooks | Add `webhooks/*` to CSRF exclusions, clear caches |
+| Status stays 'opened' | EmailTrackingController not updating status | Update click() to set `status='clicked'` |
+| Timestamps NULL | Columns not in $fillable | Add timestamp columns to EmailMessage $fillable |
+| Database rejects 'clicked' | Enum too restrictive | Run migration to change status to varchar(20) |
+| Wrong timezone display | UTC vs local time | Set APP_TIMEZONE in config/app.php |
+| No webhook logs | Webhook not configured in Brevo | Enable transactional email events in Brevo dashboard |
+
+**Deployment Checklist for Webhook Changes**
+
+1. Upload files:
+   - `bootstrap/app.php` (CSRF exclusion)
+   - `app/Http/Controllers/WebhookController.php`
+   - `app/Http/Controllers/EmailTrackingController.php`
+   - `app/Models/EmailMessage.php`
+   - `database/migrations/*_update_email_messages_status_enum.php`
+   - `config/app.php` (timezone)
+
+2. Run on server:
+   ```bash
+   php artisan migrate
+   php artisan optimize:clear
+   ```
+
+3. Test:
+   ```bash
+   curl -X POST https://yourdomain.com/webhooks/brevo \
+     -H "Content-Type: application/json" \
+     -d '{"event":"click","email":"test@example.com","messageId":"test123"}'
+   ```
+   Should return: `{"ok":true}` (not 419 error)
+
+4. Verify logs:
+   ```bash
+   tail -f storage/logs/laravel.log
+   ```
+   Should see: "Webhook received from: brevo" when clicking email links
+
+### FTP Deployment Checklist (online/staging/production) 🔧
+
+**Pre-deploy (local, required)**
+- Create a full backup of the live site (files + DB) through the host control panel or by requesting a backup from the host. **Always keep a copy** before changes. ✅
+- Run locally: `composer install --no-dev --optimize-autoloader` so `vendor/` is ready to upload.
+- Build frontend assets locally (e.g., `npm run build` / `pnpm build` / `vite build`) and include `public/build` (or equivalent) in the upload.
+- Run tests locally and verify critical flows (email sending, queues, migrations if applicable).
+- Create a zip of the current production files (downloaded from host or via control panel) so a quick rollback is available.
+
+**Files / paths to upload (minimum)**
+- `vendor/` (updated with new dependencies like `getbrevo/brevo-php`)
+- `composer.lock` (recommended)
+- `app/` (modified PHP files)
+- `config/` (changed service config, e.g., `config/services.php`)
+- `public/` (new compiled assets and `og-images/` if applicable)
+- `resources/views/` (changed blade templates)
+- `bootstrap/cache/` (do NOT upload cached PHP files; instead clear them after upload)
+
+**Upload (via FileZilla/SFTP)**
+- Upload the prepared files to the server, preserving file permissions. Prefer SFTP if available for security.
+- Do NOT overwrite `.env` via FTP unless you have an exact file to replace—prefer updating `.env` using the host control panel editor or secure SSH editing.
+
+**Post-upload (server-side verification / actions)**
+- If you *have* access to the host terminal: run harmless maintenance commands: `php artisan config:cache`, `php artisan route:cache`, `php artisan view:clear`, `php artisan storage:link` (if needed). Run `php artisan migrate --force` only if there are verified, necessary migrations and you have taken DB backups.
+- If you *do not* have terminal access: ask the host to run the above commands OR delete stale cache files in `bootstrap/cache/` (e.g., `config.php`, `routes.php`) so Laravel rebuilds them on next request.
+- Restart queue workers (Supervisor/Horizon) — ask host to restart if you cannot do this yourself. Verify queues process jobs by dispatching a test job and checking logs/`failed_jobs`.
+
+**Smoke tests & validation**
+- Trigger a test email or campaign and check delivery/status in Brevo dashboard and `storage/logs/laravel.log`.
+- Manually test core user flows (login, key pages, upload, forms) and verify no JS or asset errors in browser console.
+
+**Rollback plan**
+- If rollback needed: re-upload the backed-up site files and restore the DB snapshot. Notify users if downtime or data loss may occur.
+
+**Security & notes**
+- Use SFTP when possible, rotate any API keys that were exposed, and never run destructive commands (`migrate:fresh`, `migrate:refresh`) on production.
+- If the host provides a terminal, coordinate with them to run commands instead of attempting risky actions via temporary web scripts.
+
 
 ## AI Agent Operational Guidelines
 

@@ -119,7 +119,10 @@
                     <button class="plan-button">Contáctanos</button>
                 </div>
                 <div class='container-2'>
-                    
+                    <video class="plan-video" loop playsinline preload="metadata" controls poster="{{ asset('assets/vids/planpreventivo-poster.png') }}">
+                        <source src="{{ asset('assets/vids/planpreventivo.mp4') }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
                 </div>
             </section>
 

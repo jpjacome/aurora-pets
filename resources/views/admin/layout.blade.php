@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin - @yield('title')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <!-- Favicon & App Icons -->
     <link rel="icon" type="image/png" href="/assets/favicon.png">
@@ -24,6 +25,7 @@
                 <a href="/admin">Dashboard</a>
                 <a href="/admin/tests">Tests</a>
                 <a href="/admin/clients">Clients</a>
+                <a href="/admin/email-campaigns">Email Campaigns</a>
                 <a href="/admin/plants">Plants</a>
                 <a href="/admin/users">Users</a>
             </nav>
@@ -66,6 +68,7 @@
                 <a href="/admin">Dashboard</a>
                 <a href="/admin/tests">Tests</a>
                 <a href="/admin/clients">Clients</a>
+                <a href="/admin/email-campaigns">Email Campaigns</a>
                 <a href="/admin/plants">Plants</a>
                 <a href="/admin/users">Users</a>
                 <a href="/admin/settings">Admin Settings</a>
@@ -143,5 +146,6 @@
             });
         })();
     </script>
+    @yield('scripts')
 </body>
 </html>

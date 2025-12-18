@@ -33,6 +33,7 @@ class Client extends Model
         'pet_birthday' => 'date',
         'pet_color' => 'array',
         'pet_characteristics' => 'array',
+        'unsubscribed_at' => 'datetime',
     ];
 
     /**

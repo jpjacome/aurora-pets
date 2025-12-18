@@ -130,7 +130,12 @@ class TestController
                 'share_url' => $shareUrl,
             ];
 
-            Mail::to($test->email)->queue(new PlantScanResultMail($mailPayload));
+            // Use a safe mailer in case the configured default mailer isn't present in config.mail.mailers
+            $defaultMailer = config('mail.default');
+            $available = config('mail.mailers', []);
+            $useMailer = array_key_exists($defaultMailer, $available) ? $defaultMailer : (array_key_exists('smtp', $available) ? 'smtp' : $defaultMailer);
+
+            Mail::mailer($useMailer)->queue(new PlantScanResultMail($mailPayload));
         } catch (\Throwable $e) {
             // Don't break the response if mailing fails; log for later inspection
             logger()->warning('Failed to queue PlantScanResultMail for test '.$test->id.': '.$e->getMessage());

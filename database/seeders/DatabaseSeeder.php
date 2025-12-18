@@ -19,5 +19,12 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Create default admin
+        // create admin user if it doesn't already exist
+        \App\Models\User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            ['name' => 'Admin', 'role' => 'admin', 'password' => \Illuminate\Support\Facades\Hash::make('password')]
+        );
     }
 }

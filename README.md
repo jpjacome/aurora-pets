@@ -10,6 +10,12 @@ This repository contains the full application sources (backend + frontend assets
 - Digital profiles for pets and plants (CRUD via Eloquent models)
 - Email generation for PlantScan results and OG image generation job
 - Admin pages for managing plants, pets and users
+- **Email Campaign System** with Brevo API integration
+  - Create campaigns with manual recipients or client selection
+  - Real-time webhook tracking for delivered, opened, and clicked events
+  - Click tracking via redirect URLs through EmailTrackingController
+  - Campaign statistics dashboard with status badges
+  - Preview and schedule campaign sending
 
 ## Tech stack
 
@@ -39,6 +45,53 @@ php artisan serve --host=127.0.0.1 --port=8000
 ```powershell
 php artisan migrate --seed
 ```
+
+## Email Campaign & Webhook Configuration
+
+The application uses Brevo API for sending email campaigns and tracking email events.
+
+### Required Environment Variables
+
+```env
+BREVO_API_KEY=your-brevo-api-key
+BREVO_WEBHOOK_SECRET=your-webhook-secret
+APP_TIMEZONE=America/Bogota  # or your timezone
+```
+
+### Webhook Setup
+
+1. **Configure Brevo Webhook:**
+   - Go to Brevo Dashboard → Integrations → Webhooks
+   - Create a new webhook with URL: `https://yourdomain.com/webhooks/brevo`
+   - Enable events: `delivered`, `opened`, `click` for **Transactional emails**
+   - Copy the webhook secret to your `.env` as `BREVO_WEBHOOK_SECRET`
+
+2. **CSRF Exclusion:** Webhooks are automatically excluded from CSRF verification in `bootstrap/app.php`
+
+3. **Timezone:** Set `APP_TIMEZONE` in `config/app.php` to match your local timezone for proper timestamp display
+
+### Click Tracking
+
+The app uses two methods for click tracking:
+- **Brevo Webhooks:** External webhook events from Brevo when users click links
+- **EmailTrackingController:** Internal redirect tracking through `/track/click/{uuid}?u={url}`
+
+Both methods update `clicked_at` timestamp and set `status='clicked'` on the EmailMessage model.
+
+### Troubleshooting
+
+**Webhooks returning 419 errors:**
+- Ensure `bootstrap/app.php` excludes `webhooks/*` from CSRF verification
+- Clear all caches: `php artisan optimize:clear`
+
+**Status not updating to 'clicked':**
+- Verify the `status` column accepts 'clicked' value (run migration `update_email_messages_status_enum`)
+- Check that `EmailTrackingController` updates both `clicked_at` AND `status`
+- Ensure `delivered_at`, `opened_at`, `clicked_at` are in `EmailMessage` model's `$fillable` array
+
+**Timestamps showing wrong timezone:**
+- Set correct timezone in `config/app.php`
+- Clear config cache: `php artisan config:clear`
 
 ## Mobile viewport & PlantScan notes
 

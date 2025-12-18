@@ -6,6 +6,8 @@ use App\Http\Middleware\EnsureAdmin;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\PlantScanEmailController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\EmailCampaignController;
+use App\Http\Controllers\EmailTrackingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\PetController;
 use App\Http\Controllers\Admin\PlantController;
@@ -108,4 +110,29 @@ Route::middleware([EnsureAdmin::class])->group(function () {
             return '<pre>Error: ' . $e->getMessage() . '</pre>';
         }
     })->name('admin.run.seeder');
+
+    // Admin Email Campaigns
+    Route::get('/admin/email-campaigns', [EmailCampaignController::class, 'index'])->name('admin.email-campaigns.index');
+    Route::get('/admin/email-campaigns/create', [EmailCampaignController::class, 'create'])->name('admin.email-campaigns.create');
+    Route::post('/admin/email-campaigns', [EmailCampaignController::class, 'store'])->name('admin.email-campaigns.store');
+    Route::get('/admin/email-campaigns/{emailCampaign}', [EmailCampaignController::class, 'show'])->name('admin.email-campaigns.show');
+    Route::post('/admin/email-campaigns/{emailCampaign}/run', [EmailCampaignController::class, 'run'])->name('admin.email-campaigns.run');
+    Route::post('/admin/email-campaigns/{emailCampaign}/schedule', [EmailCampaignController::class, 'schedule'])->name('admin.email-campaigns.schedule');
+    Route::post('/admin/email-campaigns/{emailCampaign}/stop', [EmailCampaignController::class, 'stop'])->name('admin.email-campaigns.stop');
+    Route::delete('/admin/email-campaigns/{emailCampaign}', [EmailCampaignController::class, 'destroy'])->name('admin.email-campaigns.destroy');
+    Route::get('/admin/email-campaigns/{emailCampaign}/recipients', [EmailCampaignController::class, 'recipients'])->name('admin.email-campaigns.recipients');
+    Route::get('/admin/email-campaigns/clients', [EmailCampaignController::class, 'clientsList'])->name('admin.email-campaigns.clients');
+    Route::post('/admin/email-campaigns/{emailCampaign}/resend', [EmailCampaignController::class, 'resendSelected'])->name('admin.email-campaigns.resend');
+    Route::post('/admin/email-campaigns/preview', [EmailCampaignController::class, 'preview'])->name('admin.email-campaigns.preview');
+    Route::post('/admin/email-campaigns/recipients/preview', [EmailCampaignController::class, 'recipientsPreview'])->name('admin.email-campaigns.recipients.preview');
 });
+
+// Public tracking routes
+Route::get('/email/track/open/{uuid}', [EmailTrackingController::class, 'open'])->name('email.track.open');
+Route::get('/r/{uuid}', [EmailTrackingController::class, 'click'])->name('email.track.click');
+
+// Public unsubscribe route
+Route::get('/unsubscribe/{client}/{uuid}', [App\Http\Controllers\UnsubscribeController::class, 'unsubscribe'])->name('unsubscribe');
+
+// Webhook endpoints for mail providers (e.g. mailgun, sendgrid). Verify signatures in controller.
+Route::post('/webhooks/{provider}', [App\Http\Controllers\WebhookController::class, 'receive'])->name('webhooks.receive');

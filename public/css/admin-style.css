@@ -16,6 +16,7 @@ p{
     justify-content:space-between; 
     background:var(--color-2);
     height: 60px;
+    flex-direction: row;
 }
 .admin-nav{
     height: 100%;
@@ -31,7 +32,7 @@ p{
     align-items: center;
     padding: 0px 25px;
     font-family: Playfair Display;
-    font-size: clamp(20px, 1.3rem, 3vw);
+    font-size: clamp(16px, 1rem, 2vw);
 }
     .admin-nav a:hover {
         background-color: var(--color-1);
@@ -735,7 +736,114 @@ p{
 .form-section {
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
+}
+
+/* Email Campaign form improvements */
+.clients-list .client-item { 
+    padding: 0.5rem 0.75rem; 
+    border-bottom: 1px dashed rgba(220, 255, 214, 0.2); 
+    color: var(--color-3);
+}
+.clients-list .client-item:last-child { border-bottom: none; }
+.clients-list .client-item .checkbox-label { 
+    width: 100%; 
+    color: var(--color-3);
+}
+.clients-list p.form-help { margin: 0 0 .5rem 0; color: var(--color-3); }
+.form-input { 
+    box-sizing: border-box;
+    background: rgba(220, 255, 214, 0.05);
+    border: 1px solid var(--color-1);
+    color: var(--color-3);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-1);
+    background: rgba(220, 255, 214, 0.1);
+    box-shadow: 0 0 0 3px rgba(254, 141, 44, 0.1);
+}
+.form-input::placeholder {
+    color: rgba(220, 255, 214, 0.4);
+}
+/* Select dropdowns need dark text for visibility in dropdown menu */
+.form-input select,
+select.form-input {
+    background: rgba(220, 255, 214, 0.05);
+    color: var(--color-3);
+}
+.form-input select option,
+select.form-input option {
+    background: white;
+    color: #000;
+}
+.modal-form #previewArea { min-height: 300px; background: #fff; padding: 1rem; border-radius: 6px; }
+
+/* Campaign form specific */
+.campaign-form {
+    max-width: 900px;
+}
+.campaign-form .form-group {
+    margin-bottom: 1.5rem;
+}
+.campaign-form label {
+    color: var(--color-3);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+.campaign-form textarea {
+    min-height: 150px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Recipient items in manual list */
+#recipientsItems > div {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: rgba(254, 141, 44, 0.1);
+    border: 1px solid var(--color-1);
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#recipientsItems > div span {
+    color: var(--color-3);
+    font-size: 0.95rem;
+}
+#recipientsItems > div button {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    background: #dc3545;
+    color: white;
+    border-radius: 6px;
+}
+#recipientsItems > div button:hover {
+    background: #c82333;
+}
+
+/* Client selector modal */
+.modal-client-item {
     border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+}
+.modal-client-item:hover {
+    background-color: rgba(254, 141, 44, 0.05);
+}
+.modal-client-item:last-child {
+    border-bottom: none;
+}
+.modal-client-item .checkbox-label {
+    margin: 0;
+    padding: 0.75rem;
+    border-radius: 4px;
+}
+.modal-client-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
 }
 
 .form-section:last-of-type {
@@ -776,8 +884,7 @@ p{
 .form-group select {
     width: 90%;
     padding: 0.75rem;
-    border: 1px solid #ddd;
-    background-color: var(--color-3);
+    border: 1px solid var(--color-1);
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
@@ -974,11 +1081,9 @@ p{
 }
 
 .form-section, .info-section {
-    background: white;
     padding: 1.5rem;
     border-radius: 12px;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .form-section h2, .info-section h2 {
@@ -1455,10 +1560,247 @@ p{
 /* Utility to lock scrolling when menu open */
 body.no-scroll { overflow: hidden; }
 
+/* Campaign action buttons */
+.campaign-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--color-1);
+    color: white !important;
+    border: 2px solid var(--color-1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none !important;
+    padding: 0;
+    margin: 0 4px;
+}
+
+.campaign-action-btn:hover {
+    background-color: white !important;
+    color: var(--color-1) !important;
+    transform: scale(1.1);
+    text-decoration: none !important;
+}
+
+.campaign-action-btn:hover i {
+    color: var(--color-1) !important;
+}
+
+.campaign-action-btn-delete {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.campaign-action-btn-delete:hover {
+    background-color: white !important;
+    color: #dc3545 !important;
+    transform: scale(1.1);
+}
+
+.campaign-action-btn-delete:hover i {
+    color: #dc3545 !important;
+}
+
+.campaign-action-btn i {
+    font-size: 18px;
+    color: inherit;
+}
+
+/* Override table link styles for action buttons */
+.admin-table td a.campaign-action-btn {
+    color: white !important;
+}
+
+.admin-table td a.campaign-action-btn:hover {
+    text-decoration: none !important;
+}
+
+/* ============================================
+   STATUS BADGES
+   ============================================ */
+.status-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pending,
+.status-queued {
+    background: #ffc107;
+    color: #333;
+}
+
+.status-sent,
+.status-delivered {
+    background: #28a745;
+    color: white;
+}
+
+.status-opened {
+    background: #17a2b8;
+    color: white;
+}
+
+.status-clicked {
+    background: #6f42c1;
+    color: white;
+}
+
+.status-failed,
+.status-bounced {
+    background: #dc3545;
+    color: white;
+}
+
+.status-draft {
+    background: #6c757d;
+    color: white;
+}
+
+.status-scheduled {
+    background: #fd7e14;
+    color: white;
+}
+
+.status-running {
+    background: var(--color-1);
+    color: white;
+}
+
+/* ============================================
+   CAMPAIGN SHOW PAGE
+   ============================================ */
+.campaign-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.campaign-title-section h1 {
+    margin: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.campaign-subject {
+    color: #666;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+.campaign-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--color-2);
+    padding: 1.25rem;
+    border-radius: 10px;
+    border: 1px solid var(--color-1);
+    text-align: center;
+}
+
+.stat-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-1);
+    margin-bottom: 0.25rem;
+}
+
+.stat-card-label {
+    font-size: 0.8rem;
+    color: var(--color-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.campaign-actions-section {
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.campaign-actions-section h2 {
+    margin: 0 0 1.5rem 0;
+    color: var(--color-2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+}
+
+.action-form {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.action-form:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.form-inline-group {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.form-inline-group .form-group {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 200px;
+}
+
+.recipients-section h2 {
+    margin-bottom: 1.5rem;
+    color: var(--color-2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.recipients-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
 @media (max-width: 768px) {
     /* Hide desktop nav and show hamburger */
     .admin-nav { display: none !important; }
     .admin-hamburger { display: inline-flex; }
     /* Adjust header spacing for hamburger */
     .admin-left { gap: 0.5rem; }
+    
+    .campaign-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .form-inline-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .form-inline-group .form-group {
+        width: 100%;
+    }
 }

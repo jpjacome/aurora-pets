@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora - Webhook Test Campaign</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 20px 0; text-align: center; background-color: #00452A;">
+                <h1 style="color: #dcffd6; margin: 0; font-size: 28px; font-family: 'Playfair Display', serif;">
+                    🌿 Aurora Webhook Test
+                </h1>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 40px 20px;">
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #00452A; margin-top: 0; font-size: 24px;">
+                                Testing Email Tracking
+                            </h2>
+                            
+                            <p style="color: #333; line-height: 1.6; font-size: 16px;">
+                                This email is designed to test all Brevo webhook events:
+                            </p>
+
+                            <div style="background-color: #dcffd6; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #fe8d2c;">
+                                <p style="margin: 0 0 10px 0; color: #00452A; font-weight: bold;">✅ Delivered Event</p>
+                                <p style="margin: 0; color: #333; font-size: 14px;">
+                                    This event triggered when you received this email.
+                                </p>
+                            </div>
+
+                            <div style="background-color: #dcffd6; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #fe8d2c;">
+                                <p style="margin: 0 0 10px 0; color: #00452A; font-weight: bold;">👁️ Opened Event</p>
+                                <p style="margin: 0; color: #333; font-size: 14px;">
+                                    This event triggered when you opened this email (you're seeing it now!).
+                                </p>
+                            </div>
+
+                            <div style="background-color: #dcffd6; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #fe8d2c;">
+                                <p style="margin: 0 0 10px 0; color: #00452A; font-weight: bold;">🖱️ Clicked Event</p>
+                                <p style="margin: 0 0 15px 0; color: #333; font-size: 14px;">
+                                    Click any of the links below to trigger the click tracking event:
+                                </p>
+                                
+                                <!-- Click Test Links -->
+                                <table role="presentation" style="width: 100%;">
+                                    <tr>
+                                        <td style="padding: 10px 0;">
+                                            <a href="https://google.com" style="display: inline-block; background-color: #fe8d2c; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                                                🔗 Test Link 1
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 0;">
+                                            <a href="https://www.youtube.com" style="display: inline-block; background-color: #00452A; color: #dcffd6; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                                                🔗 Test Link 2
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 0;">
+                                            <a href="https://github.com" style="display: inline-block; background-color: #fe8d2c; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                                                🔗 Test Link 3
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
+                                <h3 style="color: #00452A; font-size: 18px;">How to Verify:</h3>
+                                <ol style="color: #333; line-height: 1.8;">
+                                    <li>Check your campaign show page - you should see the email status as <strong>"delivered"</strong></li>
+                                    <li>After opening this email, refresh the page - status should update to <strong>"opened"</strong> with a timestamp</li>
+                                    <li>Click any link above, then refresh - you should see <strong>"clicked_at"</strong> timestamp populated</li>
+                                    <li>Check the Laravel logs at <code>storage/logs/laravel.log</code> for webhook events</li>
+                                </ol>
+                            </div>
+
+                            <div style="background-color: #fff4e6; padding: 15px; border-radius: 6px; margin-top: 20px; border: 1px solid #fe8d2c;">
+                                <p style="margin: 0; color: #333; font-size: 14px;">
+                                    <strong>💡 Tip:</strong> Webhook events may take a few seconds to arrive. If you don't see updates immediately, wait 10-30 seconds and refresh the campaign show page.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 20px; text-align: center; background-color: #00452A; color: #dcffd6; font-size: 14px;">
+                <p style="margin: 0 0 10px 0;">
+                    🌿 Aurora Email Campaign System
+                </p>
+                <p style="margin: 0; font-size: 12px; opacity: 0.8;">
+                    This is a webhook tracking test email
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

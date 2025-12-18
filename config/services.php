@@ -35,6 +35,11 @@ return [
         ],
     ],
 
+    'brevo' => [
+        'api_key' => env('BREVO_API_KEY'),
+        'webhook_secret' => env('BREVO_WEBHOOK_SECRET'),
+    ],
+
     'google_analytics' => [
         'enabled' => env('GOOGLE_ANALYTICS_ENABLED', false),
         'measurement_id' => env('GOOGLE_ANALYTICS_MEASUREMENT_ID'),
