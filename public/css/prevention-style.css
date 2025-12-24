@@ -11,6 +11,9 @@ body {
     overflow-x: hidden;
 }        
 
+.btn-primary{
+    border-radius: 30px!important;
+}
 
 /* Accessibility helper: visually hide text but keep it available to screen readers and SEO */
 .sr-only {
@@ -297,6 +300,7 @@ body {
         padding: 0.9rem 1rem;
         text-align: center;
         font-size: calc(1em + 1vw);
+        border-radius: 30px;
     }
 
 /* Section 1 responsiveness */
@@ -870,7 +874,7 @@ body {
 .pet-form input {
     width: 100%;
     padding: 0.8rem 1rem;
-    border-radius: 10px;
+    border-radius: 30px;
     border: 1.5px solid var(--color-2);
     background: rgba(255, 255, 255, 0.13);
     color: var(--color-2);
@@ -895,7 +899,7 @@ body {
     width: 100%;
     max-width: 100%;
     padding: 0.8rem 1rem;
-    border-radius: 10px;
+    border-radius: 30px;
     border: 1.5px solid var(--color-2);
     background: rgba(255, 255, 255, 0.13);
     color: var(--color-2);
@@ -1031,7 +1035,7 @@ body {
     width: 100%;
     max-width: 100%;
     padding: 0.8rem 1rem;
-    border-radius: 10px;
+    border-radius: 30px;
     border: 1.5px solid var(--color-1);
     background: rgba(255, 255, 255, 0.13);
     color: var(--color-1);
@@ -1376,7 +1380,7 @@ body {
         width: 100%;
         max-width: 360px;
         padding: 0.85rem 1rem;
-        border-radius: 10px;
+        border-radius: 30px;
         border: 1.5px solid var(--color-2);
         background: rgba(255,255,255,0.13);
         color: var(--color-2);
@@ -1393,7 +1397,7 @@ body {
     .mobile-select {
         width: 100%;
         padding: 0.5rem 0.8rem;
-        border-radius: 10px;
+        border-radius: 30px;
         border: 1.5px solid var(--color-2);
         background: rgba(255,255,255,0.13);
         color: var(--color-2);
@@ -1488,7 +1492,7 @@ body {
     width: 400px;
     max-width: 90%;
     padding: 0.8rem 1rem;
-    border-radius: 10px;
+    border-radius: 30px;
     border: 1.5px solid var(--color-1);
     background: var(--color-2);
     color: var(--color-1);
@@ -2121,12 +2125,12 @@ body {
         padding: 1rem 1rem 1.25rem; 
         box-shadow: 0 12px 40px rgba(0,0,0,0.35);
     }
-    .mobile-email-modal-content input.mobile-email-input { width: 100%; padding: 0.85rem 1rem; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--color-1); font-size: 1rem; box-sizing: border-box; }
+    .mobile-email-modal-content input.mobile-email-input { width: 100%; padding: 0.85rem 1rem; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--color-1); font-size: 1rem; box-sizing: border-box; }
 
     /* Placeholder color: use color-3 variable with vendor fallbacks */
     .mobile-email-modal-content input.mobile-email-input::placeholder { color: var(--color-3); opacity: 1; }
     .mobile-email-modal-content input.mobile-email-input::-webkit-input-placeholder { color: var(--color-3); }
     .mobile-email-modal-content input.mobile-email-input:-ms-input-placeholder { color: var(--color-3); }
     .mobile-email-modal-close { position: absolute; right: 10px; top: 6px; background: transparent; border: none; color: var(--color-1); font-size: 1.6rem; line-height:1; }
-    .mobile-email-modal .btn { padding: 0.75rem 1rem; border-radius: 10px; }
+    .mobile-email-modal .btn { padding: 0.75rem 1rem; border-radius: 30px; }
 }

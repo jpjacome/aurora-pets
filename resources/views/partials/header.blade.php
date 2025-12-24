@@ -9,7 +9,7 @@
       <img class="logo-header" src="{{ asset('assets/home/imgs/logo-hor.png') }}" alt="logo"></a>
     <div class="menu-items">
       <a href="/plantscan"><span><h3 class="menu-item" id="menu-item-plantscan">PlantScan</h3></span></a>
-      <a href="/login" class="icon-button" title="Login" aria-label="Login">
+      <a href="/login" class="icon-button login-button" title="Login" aria-label="Login">
         <i class="ph ph-user-circle"></i>
       </a>
     </div>

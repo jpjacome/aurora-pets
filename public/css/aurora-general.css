@@ -249,8 +249,12 @@ header .subheader h3 .highlights-c{
     font-family: Buenard, Verdana, Geneva, Tahoma, sans-serif;
   }
     @media only screen and (max-width: 800px) {
-      header .menu-items{
+      header #menu-item-plantscan{
         display: none;
+      }
+      header .menu-items{
+        margin-right: 0;
+        margin-right: 0;
       }
     }
     .menu-items a{
@@ -296,8 +300,8 @@ header .subheader h3 .highlights-c{
       }
       .whatsapp-icon{
         position: relative;
-        height: 100%;
-        width: 100%;
+        height: 90%;
+        width: 90%;
         background-image: url(/assets/home/imgs/icon-whatsappb.png);
         background-position: center;
         background-size: 90%;
@@ -349,10 +353,6 @@ header .subheader h3 .highlights-c{
 .icon-button:hover i{
   font-size: 2rem;
   color: var(--color-1);
-}
-.icon-button:focus{
-  outline: none;
-  box-shadow: 0 0 0 6px rgba(254,141,44,0.08);
 }
 .icon-button i, .icon-button svg{ 
   display:block; 
@@ -418,13 +418,10 @@ footer img{
   box-sizing: border-box;
 }
 .login-card{
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
-  border-radius: var(--border-radius);
   padding: 2.25rem;
   width: 420px;
   max-width: calc(100% - 2rem);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
-  border: 1px solid rgba(255,255,255,0.04);
+    border: 1px solid var(--color-1);
 }
 .login-container h1{
   font-family: var(--font-titles);

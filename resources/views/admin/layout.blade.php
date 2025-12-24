@@ -26,10 +26,18 @@
                 <a href="/admin">Dashboard</a>
                 <a href="/admin/chatbot">Chatbot</a>
                 <a href="/admin/tests">Tests</a>
-                <a href="/admin/clients">Clients</a>
+
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-button" aria-haspopup="true" aria-expanded="false">Database <i class="ph ph-caret-down"></i></button>
+                    <div class="nav-dropdown-menu" role="menu" aria-label="Database menu">
+                        <a href="/admin/plants" role="menuitem">Plants</a>
+                        <a href="/admin/users" role="menuitem">Users</a>
+                        <a href="/admin/clients" role="menuitem">Clients</a>
+                    </div>
+                </div>
+
                 <a href="/admin/email-campaigns">Email Campaigns</a>
-                <a href="/admin/plants">Plants</a>
-                <a href="/admin/users">Users</a>
+                <!-- Keep mobile links present in the mobile menu; desktop-only dropdown added above -->
             </nav>
         </div>
         <div class="admin-right">

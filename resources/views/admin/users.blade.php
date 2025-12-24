@@ -335,7 +335,6 @@
         }
 
         .modal-content {
-            background-color: white;
             padding: 0;
             border-radius: 8px;
             width: 90%;
@@ -345,73 +344,13 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 2rem;
-            cursor: pointer;
-            color: #999;
-            line-height: 1;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-        }
-
-        .modal-close:hover {
-            color: #333;
-        }
 
         .modal form {
             padding: 1.5rem;
         }
 
-        .modal-footer {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
-            margin-top: 1rem;
-        }
-
         .form-group {
             margin-bottom: 1.25rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--color-2, #333);
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        .form-group small.muted {
-            display: block;
-            margin-top: 0.25rem;
-            color: #666;
-            font-size: 0.875rem;
         }
     </style>
 @endsection

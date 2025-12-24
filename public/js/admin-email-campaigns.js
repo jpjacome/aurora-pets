@@ -454,6 +454,229 @@ document.addEventListener('DOMContentLoaded', function () {
         recipientsItems: !!recipientsItems,
         manualEmailsHidden: !!manualEmailsHidden
     });
+
+    // Template selection loader (loads templates embedded in the Blade view)
+    const templateSelect = document.getElementById('template_select');
+    const loadTemplateBtn = document.getElementById('loadTemplateBtn');
+    if (loadTemplateBtn && templateSelect) {
+        loadTemplateBtn.addEventListener('click', function () {
+            const sel = templateSelect.value;
+            if (!sel) { alert('Select a template'); return; }
+            try {
+                const content = atob(sel);
+                if (!templateBody) return;
+                if (confirm('Load template into Template Body? This will replace current content.')) {
+                    templateBody.value = content;
+                    // if grapesEditor exists, import
+                    try {
+                        if (window.grapesEditor) window.grapesEditor.setComponents(content);
+                        else if (typeof grapesEditor !== 'undefined' && grapesEditor) grapesEditor.setComponents(content);
+                    } catch (e) {
+                        console.warn('Failed to import into grapes editor', e);
+                    }
+                }
+            } catch (e) {
+                alert('Failed to decode template content');
+            }
+        });
+    }
+
+    // -------------------------
+    // GrapesJS visual editor
+    // -------------------------
+    const openEditorBtn = document.getElementById('openEditorBtn');
+    const importHtmlBtn = document.getElementById('importHtmlBtn');
+    const exportHtmlBtn = document.getElementById('exportHtmlBtn');
+    const toggleRawHtmlBtn = document.getElementById('toggleRawHtmlBtn');
+    const gjsContainer = document.getElementById('gjs');
+
+    let grapesEditor = null;
+    let grapesInitialized = false;
+
+    // DEBUG: element presence
+    console.debug('GrapesJS debug - elements', {
+        openEditorBtn: !!openEditorBtn,
+        importHtmlBtn: !!importHtmlBtn,
+        exportHtmlBtn: !!exportHtmlBtn,
+        toggleRawHtmlBtn: !!toggleRawHtmlBtn,
+        gjsContainer: !!gjsContainer,
+        templateBody: !!templateBody,
+        grapesjsLoaded: typeof grapesjs !== 'undefined'
+    });
+
+    function debounce(fn, wait) {
+        let t;
+        return function(...args) {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), wait);
+        };
+    }
+
+    // Helper that ensures templateBody exists
+    if (typeof templateBody !== 'undefined' && templateBody) {
+        // Open / init editor
+        if (openEditorBtn && gjsContainer) {
+            openEditorBtn.addEventListener('click', function () {
+                console.debug('GrapesJS: openEditorBtn clicked', {
+                    grapesInitialized,
+                    grapesjsType: typeof grapesjs,
+                    gjsContainerExists: !!gjsContainer,
+                    templateBodyValueLength: templateBody ? templateBody.value.length : 0
+                });
+
+                // Immediate visual debug: show a fallback marker so user can see the container
+                try {
+                    gjsContainer.style.display = 'block';
+                    gjsContainer.style.background = 'rgba(255,255,255,0.95)';
+                    gjsContainer.innerHTML = '<div id="gjs-debug-fallback" style="padding:20px; color:#00452A; font-weight:700;">GrapesJS debug: container shown — initializing...</div>';
+                } catch (err) {
+                    console.warn('GrapesJS: failed to show debug fallback in gjsContainer', err);
+                }
+                // Lazy init grapesjs when first opened
+                if (!grapesInitialized) {
+                    if (typeof grapesjs === 'undefined') {
+                        console.error('GrapesJS not loaded (typeof grapesjs === undefined). Check CDN or network.');
+                        alert('GrapesJS not loaded. Please check your internet connection or CDN.');
+                        return;
+                    }
+
+                    try {
+                        grapesEditor = grapesjs.init({
+                            container: '#gjs',
+                            fromElement: false,
+                            height: '100%',
+                            storageManager: { autoload: 0, autosave: 0 },
+                            plugins: [],
+                            canvas: { styles: [], scripts: [] },
+                            assetManager: {
+                                upload: true,
+                                uploadName: 'file',
+                                headers: { 'X-CSRF-TOKEN': csrfToken },
+                                // custom upload handler — returns Promise resolving to array of assets
+                                uploadFile: function(file) {
+                                    return new Promise(function(resolve, reject) {
+                                        try {
+                                            const form = new FormData();
+                                            form.append('file', file);
+                                            fetch('/admin/email-campaigns/upload-image', {
+                                                method: 'POST',
+                                                body: form,
+                                                headers: { 'X-CSRF-TOKEN': csrfToken }
+                                            }).then(function(resp) {
+                                                if (!resp.ok) return resp.json().then(function(j){ throw j; });
+                                                return resp.json();
+                                            }).then(function(json) {
+                                                if (json && json.src) {
+                                                    resolve([{ src: json.src }]);
+                                                } else {
+                                                    reject(new Error('Invalid upload response'));
+                                                }
+                                            }).catch(function(err) {
+                                                console.error('Asset upload failed', err);
+                                                reject(err);
+                                            });
+                                        } catch (err) {
+                                            reject(err);
+                                        }
+                                    });
+                                }
+                            }
+                        });
+
+                        // Expose for debugging
+                        try { window.grapesEditor = grapesEditor; } catch(e){ /* noop */ }
+                        console.debug('GrapesJS: editor initialized', { grapesEditor: !!grapesEditor });
+
+                        // Load initial HTML from textarea
+                        const initialHtml = templateBody.value || '<div style="padding:20px;"><h1>Your Title</h1><p>Your content here</p></div>';
+                        grapesEditor.setComponents(initialHtml);
+                        console.debug('GrapesJS: initial components set; length:', initialHtml.length);
+
+                        // Try to explicitly render/refresh the canvas to ensure it becomes visible
+                        try {
+                            if (typeof grapesEditor.render === 'function') {
+                                grapesEditor.render();
+                                console.debug('GrapesJS: called editor.render()');
+                            }
+                            if (grapesEditor.Canvas && typeof grapesEditor.Canvas.getFrameEl === 'function') {
+                                const frame = grapesEditor.Canvas.getFrameEl();
+                                if (frame) frame.dispatchEvent(new Event('resize'));
+                            }
+                            // call refresh after a short delay as well
+                            setTimeout(function() {
+                                try {
+                                    if (typeof grapesEditor.refresh === 'function') { grapesEditor.refresh(); console.debug('GrapesJS: called editor.refresh()'); }
+                                } catch(err) { console.warn('GrapesJS: refresh failed', err); }
+                            }, 100);
+                        } catch(err) {
+                            console.warn('GrapesJS: render/refresh sequence failed', err);
+                        }
+
+                        // Sync editor -> textarea on updates (debounced)
+                        grapesEditor.on('update', debounce(function () {
+                            const html = grapesEditor.getHtml();
+                            const css = grapesEditor.getCss();
+                            templateBody.value = `<style>${css}</style>${html}`;
+                            console.debug('GrapesJS: update event — html length', html.length, 'css length', css.length);
+                        }, 400));
+                    } catch (initErr) {
+                        console.error('GrapesJS initialization error:', initErr);
+                        alert('Failed to initialize GrapesJS. Check console for details.');
+                        return;
+                    }
+
+                    grapesInitialized = true;
+                }
+
+                // Show the editor
+                gjsContainer.style.display = 'block';
+                importHtmlBtn.style.display = 'inline-block';
+                exportHtmlBtn.style.display = 'inline-block';
+                // Ensure editor refresh
+                requestAnimationFrame(function() {
+                    if (grapesEditor) grapesEditor.Canvas.getFrameEl()?.dispatchEvent(new Event('resize'));
+                });
+            });
+        }
+
+        if (importHtmlBtn) {
+            importHtmlBtn.addEventListener('click', function () {
+                if (!grapesEditor) return;
+                grapesEditor.setComponents(templateBody.value || '');
+            });
+        }
+
+        if (exportHtmlBtn) {
+            exportHtmlBtn.addEventListener('click', function () {
+                if (!grapesEditor) return;
+                const html = grapesEditor.getHtml();
+                const css = grapesEditor.getCss();
+                templateBody.value = `<style>${css}</style>${html}`;
+                alert('Editor content exported to Template Body textarea');
+            });
+        }
+
+        if (toggleRawHtmlBtn) {
+            toggleRawHtmlBtn.addEventListener('click', function () {
+                if (!templateBody) return;
+                templateBody.style.display = templateBody.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+
+        // Ensure we export editor content before actual form submit
+        // Query the form element at runtime instead of referencing a variable declared later
+        const formForEditor = document.querySelector('form[action*="email-campaigns"]');
+        if (formForEditor) {
+            formForEditor.addEventListener('submit', function (e) {
+                if (grapesEditor) {
+                    const html = grapesEditor.getHtml();
+                    const css = grapesEditor.getCss();
+                    templateBody.value = `<style>${css}</style>${html}`;
+                }
+            });
+        }
+    }
+
     
     // Form submission validation for manual recipients
     const campaignForm = document.querySelector('form[action*="email-campaigns"]');

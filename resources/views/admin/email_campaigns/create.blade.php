@@ -32,12 +32,42 @@
         </div>
 
         <div class="form-group">
+            <label for="template_select">Choose Template</label>
+            @php
+                $templatePath = resource_path('views/admin/email_campaigns/templates');
+                $templates = [];
+                if (file_exists($templatePath)) {
+                    foreach (glob($templatePath.'/*.blade.php') as $file) {
+                        $name = basename($file, '.blade.php');
+                        $content = file_get_contents($file);
+                        $templates[] = ['name' => $name, 'content' => base64_encode($content)];
+                    }
+                }
+            @endphp
+            <div class="template-select-row">
+                <select id="template_select" class="form-input template-select">
+                    <option value="">-- Select template --</option>
+                    @foreach($templates as $t)
+                        <option value="{{ $t['content'] }}">{{ $t['name'] }}</option>
+                    @endforeach
+                </select>
+                <button type="button" id="loadTemplateBtn" class="btn btn-secondary">Load Template</button>
+            </div>
+
             <label for="template_body">Template Body (HTML allowed)</label>
+            <div class="editor-controls">
+                <button type="button" id="openEditorBtn" class="btn btn-secondary">Open Visual Editor</button>
+                <button type="button" id="importHtmlBtn" class="btn btn-secondary editor-action hidden">Import HTML → Editor</button>
+                <button type="button" id="exportHtmlBtn" class="btn btn-secondary editor-action hidden">Export Editor → HTML</button>
+                <button type="button" id="toggleRawHtmlBtn" class="btn btn-secondary">Toggle Raw HTML</button>
+            </div>
+            <div id="gjs" class="gjs-container"></div>
             <textarea id="template_body" name="template_body" class="form-input" rows="8"></textarea>
+            <p class="form-help">You can edit raw HTML here; open the visual editor to build with drag-and-drop. Use Export to sync editor content to this field before saving.</p>
         </div>
 
         <div class="form-section">
-            <h3 style="color: var(--color-3); margin-bottom: 1rem;">📧 Recipients</h3>
+            <h3 class="section-title">📧 Recipients</h3>
             
             <div class="form-group">
                 <label for="recipient_type">Recipient Type</label>
@@ -49,48 +79,48 @@
                 </select>
             </div>
 
-            <div id="clientsContainer" class="clients-list" style="display:block; margin-top:1.5rem;">
-                <p class="form-help" style="color: var(--color-3); margin-bottom: 0.75rem;">Click the button below to select specific clients.</p>
+            <div id="clientsContainer" class="clients-list">
+                <p class="form-help small-muted">Click the button below to select specific clients.</p>
                 
-                <button type="button" id="openClientSelector" class="btn btn-secondary" style="margin-bottom: 1rem;">
+                <button type="button" id="openClientSelector" class="btn btn-secondary client-select-btn">
                     <i class="ph ph-users"></i> Select Clients
                 </button>
                 
-                <div id="selectedClientsList" style="padding: 1rem; background: rgba(220, 255, 214, 0.05); border: 1px solid var(--color-1); border-radius: 8px; min-height: 60px;">
-                    <p style="color: rgba(220, 255, 214, 0.5); margin: 0;">No clients selected</p>
+                <div id="selectedClientsList" class="selected-clients-list">
+                    <p class="small-muted">No clients selected</p>
                 </div>
                 
                 <!-- Hidden inputs for selected client IDs -->
                 <div id="selectedClientsInputs"></div>
             </div>
 
-            <div id="manualContainer" style="display:none; margin-top:1.5rem;">
-                <label style="color: var(--color-3); display: block; margin-bottom: 1rem; font-weight: 600;">Add Manual Recipients</label>
-                <div style="display:grid; grid-template-columns:2fr 2fr auto; gap:0.75rem; align-items:end; margin-bottom:1rem;">
+            <div id="manualContainer" class="manual-container hidden">
+                <label class="manual-label">Add Manual Recipients</label>
+                <div class="manual-grid">
                     <div>
-                        <label for="manual_email" style="font-size:0.9rem; display:block; margin-bottom:0.5rem; color: var(--color-3);">Email</label>
-                        <input type="email" id="manual_email" class="form-input" placeholder="email@example.com" style="width:100%;">
+                        <label for="manual_email" class="manual-field-label">Email</label>
+                        <input type="email" id="manual_email" class="form-input full-width" placeholder="email@example.com">
                     </div>
                     <div>
-                        <label for="manual_name" style="font-size:0.9rem; display:block; margin-bottom:0.5rem; color: var(--color-3);">Name</label>
-                        <input type="text" id="manual_name" class="form-input" placeholder="Full Name" style="width:100%;">
+                        <label for="manual_name" class="manual-field-label">Name</label>
+                        <input type="text" id="manual_name" class="form-input full-width" placeholder="Full Name">
                     </div>
-                    <button type="button" id="addRecipient" class="btn btn-secondary" style="height:fit-content; padding: 0.75rem 1.5rem;">Add</button>
+                    <button type="button" id="addRecipient" class="btn btn-secondary add-recipient-btn">Add</button>
                 </div>
                 
-                <div id="recipientsItems" style="max-height:200px; overflow-y:auto; margin-bottom:1rem; padding: 0.5rem; background: rgba(220, 255, 214, 0.05); border-radius: 8px; border: 1px solid var(--color-1);">
+                <div id="recipientsItems" class="recipients-items">
                     <!-- Recipients will be added here dynamically -->
                 </div>
                 
                 <!-- Hidden field that stores the JSON array -->
                 <input type="hidden" name="manual_emails" id="manual_emails_hidden" value="[]">
                 
-                <p class="form-help" style="color: var(--color-3); font-size: 0.9rem;">💡 Click on a client above to auto-fill email and name, or type manually. Press Enter or click "Add" to add to list.</p>
+                <p class="form-help">💡 Click on a client above to auto-fill email and name, or type manually. Press Enter or click "Add" to add to list.</p>
             </div>
 
-            <div style="margin-top:1.5rem; display: flex; align-items: center; gap: 1rem;">
+            <div class="recipients-actions">
                 <button type="button" id="previewRecipients" class="btn btn-secondary">Preview recipients</button>
-                <span id="recipientsCount" style="color: var(--color-1); font-weight: 600; font-size: 1.1rem;">0 recipients</span>
+                <span id="recipientsCount" class="recipients-count">0 recipients</span>
             </div>
         </div>
 
@@ -157,6 +187,8 @@
         </div>
     </div>
     
+    <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
+    <script src="https://unpkg.com/grapesjs"></script>
     <script src="/js/admin-email-campaigns.js"></script>
 
 @endsection

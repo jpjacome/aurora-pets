@@ -1,3 +1,53 @@
+/* Admin custom styles for email campaign editor and forms */
+
+/* Template selection */
+.template-select-row{display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem}
+.template-select{max-width:420px}
+
+/* Editor controls */
+.editor-controls{display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center}
+.editor-action.hidden{display:none}
+.editor-action{display:inline-block}
+.gjs-container{
+    display:none;
+    height:50vh!important;
+    border:1px solid rgba(0,0,0,0.06);
+    border-radius:8px;
+    overflow:hidden;
+    margin-bottom:0.75rem;
+    background:#fff
+}
+
+.form-help{color:var(--color-3);font-size:0.9rem;margin-top:0.5rem}
+.section-title{color:var(--color-3);margin-bottom:1rem}
+
+/* Clients list */
+.clients-list{margin-top:1.5rem}
+.client-select-btn{margin-bottom:1rem}
+.selected-clients-list{padding:1rem;background:rgba(220,255,214,0.05);border:1px solid var(--color-1);border-radius:8px;min-height:60px}
+.small-muted{color:rgba(220,255,214,0.5)}
+
+/* Manual recipients */
+.manual-container.hidden{display:none}
+.manual-label{color:var(--color-3);display:block;margin-bottom:1rem;font-weight:600}
+.manual-grid{display:grid;grid-template-columns:2fr 2fr auto;gap:0.75rem;align-items:end;margin-bottom:1rem}
+.manual-field-label{font-size:0.9rem;display:block;margin-bottom:0.5rem;color:var(--color-3)}
+.full-width{width:100%}
+.add-recipient-btn{height:fit-content;padding:0.75rem 1.5rem}
+
+.recipients-items{max-height:200px;overflow-y:auto;margin-bottom:1rem;padding:0.5rem;background:rgba(220,255,214,0.05);border-radius:8px;border:1px solid var(--color-1)}
+.recipients-actions{margin-top:1.5rem;display:flex;align-items:center;gap:1rem}
+.recipients-count{color:var(--color-1);font-weight:600;font-size:1.1rem}
+
+/* Modal styles */
+.modal-search{width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem}
+.modal-actions{margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.modal-clients-list{max-height:400px;overflow-y:auto;border:1px solid #ddd;border-radius:8px;padding:0.5rem;background:#f9f9f9}
+.modal-pagination{margin-top:1rem;display:flex;justify-content:center;gap:0.5rem}
+.small-btn{padding:0.5rem 1rem;font-size:0.9rem}
+
+/* Utility */
+.hidden{display:none!important}
 body{
     margin: 0;
 }
@@ -8,6 +58,9 @@ h1{
 
 p{
     color: black;
+}
+label{
+    color: var(--color-3);
 }
 
 .admin-header{
@@ -184,7 +237,20 @@ p{
     margin-right: 10px;
 }
 
-.client-grid { display:flex; flex-wrap:wrap; gap:1rem; }
+.dashboard-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+
+.client-grid { 
+    display:flex; 
+    flex-wrap:wrap; 
+    gap:1rem; 
+    color: var(--color-3);
+}
 
 .client-card { 
     flex: 1 1 calc(30% - 1rem);
@@ -398,6 +464,44 @@ p{
 }
 
 @keyframes slideDown {
+}
+
+/* Responsive adjustments for admin chatbot test UI */
+@media (max-width: 640px) {
+    /* Stack the top header area into a column on small screens */
+    .test-top-row {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.75rem;
+    }
+    /* Make right-side controls flow full width beneath the title */
+    .test-top-row .right-controls {
+        width: 100%;
+        display: flex !important;
+        justify-content: flex-start !important;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    /* Ensure test chat and insights panels stack vertically if needed */
+    .test-chatbot-container {
+        flex-direction: column;
+    }
+
+    /* Make the Aurora expression image smaller on mobile (90% of parent) */
+    .aurora-expression-container {
+        display: flex;
+        justify-content: center;
+    }
+    .aurora-expression-img {
+        width: 90% !important;
+        max-width: 90% !important;
+        height: auto !important;
+    }
+}
+
+
     from {
         opacity: 0;
         transform: translateY(-10px);
@@ -545,7 +649,7 @@ p{
 }
 
 .care-info-title {
-    color: var(--aurora-green);
+    color: var(--color-2);
     margin-bottom: 0.5rem;
     display: block;
 }
@@ -685,7 +789,7 @@ p{
 }
 
 .modal-content {
-    background: white;
+    background: var(--color-2);
     border-radius: 12px;
     max-width: 500px;
     width: 90%;
@@ -694,7 +798,9 @@ p{
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     margin: auto;
 }
-
+.modal-content h3{
+    color: var(--color-1);
+}
 .modal-large {
     max-width: 700px;
 }
@@ -704,17 +810,17 @@ p{
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-1);
     position: sticky;
     top: 0;
-    background: white;
+    background: var(--color-2);
     z-index: 10;
 }
 
 .modal-header h2 {
     margin: 0;
     font-size: 1.5rem;
-    color: var(--color-2);
+    color: var(--color-1);
 }
 
 .modal-close {
@@ -852,7 +958,7 @@ select.form-input option {
 
 .form-section h3 {
     margin: 0 0 1rem 0;
-    color: var(--color-2);
+    color: var(--color-1);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -889,6 +995,8 @@ select.form-input option {
     font-size: 1rem;
     transition: border-color 0.3s ease;
     font-family: inherit;
+    color: var(--color-3);
+    background: var(--color-2);
 }
 
 .form-group input:focus,
@@ -928,10 +1036,10 @@ select.form-input option {
     gap: 1rem;
     justify-content: flex-end;
     padding: 1rem 1.5rem 1.5rem 1.5rem;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--color-1);
     position: sticky;
     bottom: 0;
-    background: white;
+    background: var(--color-2);
 }
 
 .admin-buttons{
@@ -1809,6 +1917,15 @@ body.no-scroll { overflow: hidden; }
    WHATSAPP CHATBOT ADMIN STYLES
    ============================================ */
 
+.chatbot-action-buttons{
+    display: flex;
+    width: fit-content;
+    gap: 1rem;
+}
+.chatbot-action-buttons .btn-primary{
+    width: fit-content;
+}
+
 /* Chatbot Dashboard Layout */
 .chatbot-container {
     display: grid;
@@ -1817,6 +1934,18 @@ body.no-scroll { overflow: hidden; }
     height: calc(100vh - 200px);
     max-height: 900px;
 }
+
+/* Admin card used on management pages */
+.admin-card {
+    background: var(--color-2);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(220,255,214,0.04);
+}
+
+/* Action buttons used in chatbot header */
+.chatbot-action-buttons{ display:flex; gap:0.5rem; align-items:center; }
+.chatbot-action-buttons .btn-primary, .chatbot-action-buttons .btn-secondary { display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; }
 
 /* Left Panel - Conversations List */
 .conversations-panel {
@@ -2244,6 +2373,9 @@ input:checked + .toggle-slider:before {
 .message.incoming .message-text {
     color: var(--color-3);
 }
+.message.incoming .message-text p{
+    color: var(--color-3);
+}
 
 .message.outgoing .message-text {
     color: #000;
@@ -2665,5 +2797,300 @@ input:checked + .toggle-slider:before {
 
     .chat-messages {
         padding: 1rem;
+    }
+}
+
+/* ============================================
+   TEST CHATBOT INTERFACE
+   ============================================ */
+.test-chatbot-container {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 1.5rem;
+    height: calc(100vh - 250px);
+}
+
+.test-chat-panel {
+    background: var(--color-2);
+    border-radius: 12px;
+    border: 1px solid var(--color-1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.test-chat-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(220, 255, 214, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.test-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.test-chat-input-area {
+    padding: 1rem;
+    border-top: 1px solid rgba(220, 255, 214, 0.1);
+}
+
+/* Typing Indicator */
+.typing-indicator .message-bubble {
+    padding: 0.75rem 1rem;
+}
+
+.typing-dots {
+    display: flex;
+    gap: 0.375rem;
+    align-items: center;
+}
+
+.typing-dots span {
+    width: 8px;
+    height: 8px;
+    background: var(--color-3);
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        opacity: 0.3;
+        transform: translateY(0);
+    }
+    30% {
+        opacity: 1;
+        transform: translateY(-8px);
+    }
+}
+
+/* AI Insights Panel */
+.ai-insights-panel {
+    background: var(--color-2);
+    border-radius: 12px;
+    border: 1px solid var(--color-1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Aurora Expression Display */
+.aurora-expression-container {
+    display: flex;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.15) 100%);
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+}
+
+.aurora-expression-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--color-1) 50%, 
+        transparent 100%
+    );
+}
+
+.aurora-expression-img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 4px solid var(--color-1);
+    object-fit: cover;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 1rem;
+}
+
+.aurora-expression-img:hover {
+    transform: scale(1.08) translateY(-4px);
+    box-shadow: 
+        0 12px 28px rgba(254, 141, 44, 0.5),
+        0 0 0 12px rgba(254, 141, 44, 0.15);
+}
+
+.aurora-name {
+    color: var(--color-1);
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-family: 'Playfair Display', serif;
+}
+
+.aurora-name::after {
+    content: '🧡';
+    margin-left: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.insights-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(220, 255, 214, 0.1);
+}
+
+.insights-header h3 {
+    margin: 0;
+    color: var(--color-3);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.insights-content {
+    flex: 1;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.insight-section {
+    margin-bottom: 1.5rem;
+}
+
+.insight-section:last-child {
+    margin-bottom: 0;
+}
+
+.insight-section h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--color-3);
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.insight-section h4 i {
+    font-size: 1.1rem;
+}
+
+.insight-value {
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(220, 255, 214, 0.1);
+    color: var(--color-3);
+    font-size: 0.95rem;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.insights-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(220, 255, 214, 0.1);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Test Chatbot */
+@media (max-width: 1024px) {
+    .test-chatbot-container {
+        grid-template-columns: 1fr 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .test-chatbot-container {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .test-chat-panel {
+        height: 60vh;
+        min-height: 400px;
+    }
+    
+    .ai-insights-panel {
+        height: auto;
+    }
+}
+
+/* Desktop-only: header nav Database dropdown */
+@media (min-width: 769px) {
+    .nav-dropdown { 
+        position: relative; 
+        display: inline-block;
+        height: 100%;
+        z-index: 60; 
+    }
+
+    .nav-dropdown-button {
+        background: none;
+        border: none;
+        color: var(--color-1);
+        height: 100%;
+        padding: 0 25px;
+        font-family: Playfair Display;
+        font-size: clamp(16px, 1rem, 2vw);
+        border-radius: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .nav-dropdown-button:hover{
+        color: var(--color-2);
+    }
+
+    .nav-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: var(--color-2);
+        border: 1px solid rgba(220,255,214,0.08);
+        border-radius: 6px;
+        min-width: 160px;
+        padding: 0.25rem 0;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        z-index: 9999;
+        pointer-events: auto;
+    }
+
+    .nav-dropdown:hover .nav-dropdown-menu,
+    .nav-dropdown-button:focus + .nav-dropdown-menu {
+        display: block;
+    }
+
+    .nav-dropdown-menu a {
+        display: block;
+        padding: 0.5rem 1rem;
+        color: var(--color-3);
+        text-decoration: none;
+    }
+
+    .nav-dropdown-menu a:hover {
+        background: rgba(220,255,214,0.03);
+        color: var(--color-1);
     }
 }

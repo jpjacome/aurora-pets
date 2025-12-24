@@ -438,8 +438,9 @@ header{
     margin: 0;
     padding: 1rem 0rem;
     text-align: center;
-    background-color: #dafdd4;
+    background-color: var(--color-3);
     border: 1rem solid var(--color-1);
+    border-radius: 30px;
     color: var(--color-2);
     z-index: 9999;
 

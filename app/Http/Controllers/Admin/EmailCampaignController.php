@@ -280,6 +280,26 @@ class EmailCampaignController extends Controller
     }
 
     /**
+     * Receive uploaded images from GrapesJS asset manager and return public URL
+     */
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|image|max:5120', // max 5MB
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store('email-campaigns', 'public');
+
+        if (!$path) {
+            return response()->json(['error' => 'Failed to store file'], 500);
+        }
+
+        // Return publicly accessible URL (requires `php artisan storage:link` in deployment)
+        return response()->json(['src' => asset('storage/' . $path)]);
+    }
+
+    /**
      * Return paginated clients for client selection (JSON) to support infinite scroll
      */
     public function clientsList(Request $request)

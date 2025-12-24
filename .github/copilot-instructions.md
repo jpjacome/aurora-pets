@@ -384,6 +384,98 @@ Table: clients
 - created_at (timestamp)
 ```
 
+### WhatsApp Chatbot Database Schema
+```
+Table: whatsapp_conversations
+- id (bigint, PK)
+- phone_number (string, unique) # WhatsApp number with country code
+- client_id (bigint, FK to clients.id, nullable)
+- contact_name (string, nullable)
+- is_bot_mode (boolean, default true)
+- lead_score (enum: new, cold, warm, hot, default 'new')
+- last_message_at (timestamp, nullable)
+- unread_count (integer, default 0)
+- is_archived (boolean, default false)
+- created_at, updated_at (timestamps)
+
+Table: whatsapp_messages
+- id (bigint, PK)
+- conversation_id (bigint, FK to whatsapp_conversations.id)
+- direction (enum: incoming, outgoing)
+- content (text)
+- sent_by_bot (boolean, default false)
+- status (enum: pending, sent, delivered, read, failed, default 'sent')
+- whatsapp_message_id (string, nullable) # WhatsApp's message ID
+- metadata (json, nullable) # For media URLs, template info, etc.
+- created_at, updated_at (timestamps)
+
+Relationships:
+- WhatsAppConversation belongsTo Client (optional)
+- WhatsAppConversation hasMany WhatsAppMessage
+- WhatsAppMessage belongsTo WhatsAppConversation
+- Client hasMany WhatsAppConversation
+
+Key Features:
+- Auto-linking: Conversations auto-link to clients by phone number match
+- Manual linking: Admin can link conversations to clients
+- Bot/Manual mode: Toggle AI responses per conversation
+- Lead scoring: Track conversation quality (new/cold/warm/hot)
+- Message tracking: Status tracking (sent/delivered/read)
+- Archiving: Archive old conversations
+
+Implementation Details & Notes:
+- Models & behavior:
+  - `WhatsAppConversation` contains helper methods: `autoLinkToClient()`, `markAsRead()`, `incrementUnread()`, scopes for `active()`, `unread()` and `byLeadScore()` and `getDisplayNameAttribute()`.
+  - `WhatsAppMessage` stores `direction`, `sent_by_bot`, `status`, `whatsapp_message_id` and `metadata` (cast as `array`). Use scopes `.incoming()`, `.outgoing()`, `.botGenerated()` and convenience methods `isIncoming()`, `isOutgoing()`, `updateStatus()`.
+
+- AI Service (implemented): `App\Services\GroqAIService`
+  - Supports providers: **groq**, **gemini**, **deepseek** (selected by passing `provider` to constructor or via test UI).
+  - Uses provider-specific request formats (`callOpenAIFormatAPI` for Groq/DeepSeek and `callGeminiAPI` for Gemini).
+  - Builds a rich **system prompt** implementing the Aurora persona and the critical rule **"NEVER INVENT INFORMATION"** (see `getSystemPrompt()`).
+  - Performs post-processing: greeting normalization (`ensureGreetingIncludesName()`), local time greetings (`computeLocalTimeGreeting()`), expression detection (`detectExpression()`), intent detection (`detectIntent()`), lead scoring, and escalation detection (`shouldEscalate()`).
+  - Tracks daily usage via cache keys: `ai_usage:YYYY-MM-DD:{model}:requests` and `ai_usage:YYYY-MM-DD:{model}:tokens` through `incrementUsage()` / `getDailyUsage()`.
+  - Token estimation for Gemini is attempted via `countGeminiTokens()` when available; failures are logged but non-fatal.
+
+- Admin UI & controllers:
+  - Dashboard & conversation UI: `Admin\ChatbotController@index`, `show`, `sendMessage`, `toggleMode`, `updateLeadScore`, `archive`, `export`.
+  - Test UI: `admin/chatbot/test` and `Admin\ChatbotController::testSend` — this calls `GroqAIService::generateResponse()` and returns `response` + `insights` (response time, usage counters, expression, lead score, etc.).
+  - Admin comments: `ChatbotAdminComment` model and `Admin\ChatbotAdminCommentController` for storing moderator notes and conversation context.
+
+- Webhooks & Outbound Sending (Current Status / TODOs):
+  - **Current**: `WebhookController` presently handles Brevo email webhooks (signature verification implemented for Brevo) but there is **no implemented handler for WhatsApp webhooks in production**.
+  - **TODO (Phase 2)**: Implement WhatsApp webhook handling (`handleWhatsAppWebhook`, `verifyWhatsAppWebhook`) and outbound sending via WhatsApp Business API.
+    - Add POST `/webhooks/whatsapp` (and GET verify endpoint) to `routes/web.php` and ensure `webhooks/*` is excluded from CSRF verification in `bootstrap/app.php` (see existing guidance for Brevo webhooks).
+    - Implement a queued Job (e.g., `SendWhatsAppMessage`) to call Meta Graph API with `WHATSAPP_ACCESS_TOKEN` and update `whatsapp_message_id` + `status` on success/failure.
+    - Webhook processing should map incoming WhatsApp messages to `whatsapp_conversations` (auto-create if needed), create `whatsapp_messages` entries, update `last_message_at` and `unread_count`, attempt `autoLinkToClient()`, and if `is_bot_mode` is true trigger the AI flow to generate and store/send a reply.
+    - Ensure webhook signature/verification (verify token) and idempotency for retries.
+
+- Required environment & config values (add to `.env` / `config/services.php` / `config/chatbot.php`):
+  - WhatsApp: `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_ADMIN_PHONE_NUMBER`.
+  - AI providers: `SERVICES_GROQ_API_KEY` (or `services.groq.api_key`), `SERVICES_GEMINI_API_KEY`, `SERVICES_DEEPSEEK_API_KEY` (configured in `config/services.php`).
+  - Chatbot config: `CHATBOT_DEFAULT_TIMEZONE` (defaults to `America/Bogota`) and `chatbot.model_limits` (limits per model used by `GroqAIService`).
+
+- Tests & Recommended Coverage:
+  - Feature tests for: webhook verification and processing, message lifecycle (pending→sent→delivered→read), `autoLinkToClient()` behavior, admin send flow (including queue job dispatch), and admin UI endpoints.
+  - Unit tests for: `GroqAIService::analyzeConversation()`, `ensureGreetingIncludesName()` behavior, token counting for Gemini (mock HTTP responses), and usage counters.
+  - Existing tests: `tests/Feature/AdminChatbotCommentsTest.php` covers admin comments; expand coverage to include ChatbotController endpoints and webhook flows.
+
+- Admin styling & UI notes:
+  - Chatbot admin UI styles live in `public/css/admin-style.css` under the `WHATSAPP CHATBOT ADMIN STYLES` sections. Maintain consistent card layout and action buttons.
+
+- Operational notes / Safety:
+  - The system prompt enforces **never inventing data**; escalate to a human when precise data is required (pricing, dates, urgent cases).
+  - Use queued jobs for outbound sending and retries to avoid blocking HTTP webhooks.
+  - Add monitoring/logging for webhook failures and AI provider errors (e.g., rate limits, auth issues).
+
+- Deployment checklist for Phase 2 (WhatsApp):
+  1. Add environment variables above and verify Meta App Dashboard settings.
+  2. Implement webhook endpoints + signature verification + idempotency.
+  3. Implement outbound `SendWhatsAppMessage` job, update message statuses, and persist provider message IDs.
+  4. Add feature tests and run them locally (use `RefreshDatabase`).
+  5. On deploy: upload updated code via FTP, clear caches (`php artisan optimize:clear`), and monitor logs for webhook activity.
+
+If you want, I can now: (A) insert a compact summary of these updates into `.github/copilot-instructions.md` (I already prepared the text), or (B) implement the missing webhook handler and send job as a code change with tests. Which would you prefer?
+```
 
 ### Tests Database Schema
 ```
@@ -406,3 +498,4 @@ Table: tests
 - - plant_description (string)
 
 When adding these tables, update the Model, Controller, and Feature tests accordingly. Ensure use of `RefreshDatabase` in tests and cast `metadata` as `array` in the model.
+```

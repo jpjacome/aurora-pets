@@ -25,6 +25,9 @@ Route::get('/plantscan', function () {
 // Public API: fetch plant description by name or slug
 Route::get('/plants/description', [App\Http\Controllers\PlantDescriptionController::class, 'show']);
 
+// Admin/test endpoint for chatbot plant lookup (requires auth in production)
+Route::get('/admin/chatbot/plant-lookup', [App\Http\Controllers\ChatbotPlantLookupController::class, 'lookup']);
+
 // Original home page
 Route::get('/home2', function () {
     return view('home');
@@ -102,6 +105,11 @@ Route::middleware([EnsureAdmin::class])->group(function () {
     
     // WhatsApp Chatbot
     Route::get('/admin/chatbot', [\App\Http\Controllers\Admin\ChatbotController::class, 'index'])->name('admin.chatbot.index');
+    Route::get('/admin/chatbot/test', [\App\Http\Controllers\Admin\ChatbotController::class, 'testIndex'])->name('admin.chatbot.test');
+    Route::post('/admin/chatbot/test/send', [\App\Http\Controllers\Admin\ChatbotController::class, 'testSend'])->name('admin.chatbot.test.send');
+    Route::post('/admin/chatbot/comment', [\App\Http\Controllers\Admin\ChatbotAdminCommentController::class, 'store'])->name('admin.chatbot.comment.store');
+    Route::get('/admin/chatbot/comments', [\App\Http\Controllers\Admin\ChatbotAdminCommentController::class, 'index'])->name('admin.chatbot.comment.index');
+    Route::get('/admin/chatbot/comment/{id}', [\App\Http\Controllers\Admin\ChatbotAdminCommentController::class, 'show'])->name('admin.chatbot.comment.show');
     Route::get('/admin/chatbot/conversations/{id}', [\App\Http\Controllers\Admin\ChatbotController::class, 'show'])->name('admin.chatbot.show');
     Route::post('/admin/chatbot/conversations/{id}/send', [\App\Http\Controllers\Admin\ChatbotController::class, 'sendMessage'])->name('admin.chatbot.send');
     Route::post('/admin/chatbot/conversations/{id}/toggle-mode', [\App\Http\Controllers\Admin\ChatbotController::class, 'toggleMode'])->name('admin.chatbot.toggleMode');
@@ -125,6 +133,7 @@ Route::middleware([EnsureAdmin::class])->group(function () {
     Route::get('/admin/email-campaigns/create', [EmailCampaignController::class, 'create'])->name('admin.email-campaigns.create');
     
     // Specific routes BEFORE wildcard {emailCampaign} routes
+    Route::post('/admin/email-campaigns/upload-image', [EmailCampaignController::class, 'uploadImage'])->name('admin.email-campaigns.upload-image');
     Route::get('/admin/email-campaigns/clients', [EmailCampaignController::class, 'clientsList'])->name('admin.email-campaigns.clients');
     Route::post('/admin/email-campaigns/preview', [EmailCampaignController::class, 'preview'])->name('admin.email-campaigns.preview');
     Route::post('/admin/email-campaigns/recipients/preview', [EmailCampaignController::class, 'recipientsPreview'])->name('admin.email-campaigns.recipients.preview');

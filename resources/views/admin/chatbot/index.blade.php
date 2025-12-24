@@ -4,8 +4,18 @@
 
 @section('content')
 <div>
-    <h1>WhatsApp Chatbot</h1>
-    
+    <div>
+        <h1>WhatsApp Chatbot</h1>
+        <div class='chatbot-action-buttons'>
+            <a href="{{ route('admin.chatbot.test') }}" class="btn-primary">
+                <i class="ph ph-flask"></i>
+                Test AI Bot
+            </a>
+            <a href="{{ route('admin.chatbot.comment.index') }}" class="btn-secondary">
+                <i class="ph ph-note"></i>
+                Manage Comments
+            </a>
+        </div>
     <!-- Stats Overview -->
     <div class="dashboard-grid">
         <div class="dashboard-card">
@@ -15,13 +25,8 @@
             </div>
             <div class="dashboard-card-body">
                 <div class="dashboard-stat-main">
-                    <div class="dashboard-stat-value">0</div>
-                    <div class="dashboard-stat-label">All Time</div>
-                </div>
-                <hr class="dashboard-hr">
-                <div class="dashboard-stat-secondary">
-                    <div class="dashboard-stat-value-small">0</div>
-                    <div class="dashboard-stat-label-small">This Week</div>
+                    <div class="dashboard-stat-value">{{ $stats['total_conversations'] }}</div>
+                    <div class="dashboard-stat-label">Active</div>
                 </div>
             </div>
         </div>
@@ -29,17 +34,12 @@
         <div class="dashboard-card">
             <div class="dashboard-card-header">
                 <i class="ph ph-chat-circle-dots dashboard-card-icon"></i>
-                <h2>Active Chats</h2>
+                <h2>Unread Messages</h2>
             </div>
             <div class="dashboard-card-body">
                 <div class="dashboard-stat-main">
-                    <div class="dashboard-stat-value">0</div>
-                    <div class="dashboard-stat-label">Currently Open</div>
-                </div>
-                <hr class="dashboard-hr">
-                <div class="dashboard-stat-secondary">
-                    <div class="dashboard-stat-value-small">0</div>
-                    <div class="dashboard-stat-label-small">Unread</div>
+                    <div class="dashboard-stat-value">{{ $stats['unread_count'] }}</div>
+                    <div class="dashboard-stat-label">Needs Response</div>
                 </div>
             </div>
         </div>
@@ -51,13 +51,8 @@
             </div>
             <div class="dashboard-card-body">
                 <div class="dashboard-stat-main">
-                    <div class="dashboard-stat-value">0</div>
+                    <div class="dashboard-stat-value">{{ $stats['hot_leads'] }}</div>
                     <div class="dashboard-stat-label">High Quality</div>
-                </div>
-                <hr class="dashboard-hr">
-                <div class="dashboard-stat-secondary">
-                    <div class="dashboard-stat-value-small">0</div>
-                    <div class="dashboard-stat-label-small">New Today</div>
                 </div>
             </div>
         </div>
@@ -65,17 +60,12 @@
         <div class="dashboard-card">
             <div class="dashboard-card-header">
                 <i class="ph ph-robot dashboard-card-icon"></i>
-                <h2>Bot Activity</h2>
+                <h2>Bot Mode</h2>
             </div>
             <div class="dashboard-card-body">
                 <div class="dashboard-stat-main">
-                    <div class="dashboard-stat-value">0%</div>
-                    <div class="dashboard-stat-label">Automation Rate</div>
-                </div>
-                <hr class="dashboard-hr">
-                <div class="dashboard-stat-secondary">
-                    <div class="dashboard-stat-value-small">0</div>
-                    <div class="dashboard-stat-label-small">AI Responses</div>
+                    <div class="dashboard-stat-value">{{ $stats['bot_mode_active'] }}</div>
+                    <div class="dashboard-stat-label">AI Enabled</div>
                 </div>
             </div>
         </div>
@@ -101,32 +91,46 @@
             </div>
             
             <div class="conversations-list" id="conversationsList">
-                <!-- Sample conversation item (will be replaced with real data) -->
-                <div class="conversation-item" data-conversation-id="sample">
-                    <div class="conversation-header">
-                        <span class="conversation-name">Sample Customer</span>
-                        <span class="conversation-time">2:30 PM</span>
+                @forelse($conversations as $conversation)
+                    <div class="conversation-item" data-conversation-id="{{ $conversation->id }}">
+                        <div class="conversation-header">
+                            <span class="conversation-name">
+                                @if($conversation->client)
+                                    {{ $conversation->client->client }}
+                                @elseif($conversation->contact_name)
+                                    {{ $conversation->contact_name }}
+                                @else
+                                    {{ $conversation->phone_number }}
+                                @endif
+                            </span>
+                            <span class="conversation-time">
+                                {{ $conversation->last_message_at ? $conversation->last_message_at->diffForHumans() : 'No messages' }}
+                            </span>
+                        </div>
+                        <p class="conversation-preview">
+                            {{ $conversation->messages->last()?->content ?? 'No messages yet' }}
+                        </p>
+                        <div class="conversation-meta">
+                            <span class="mode-indicator {{ $conversation->is_bot_mode ? 'mode-bot' : 'mode-manual' }}">
+                                <i class="ph-fill {{ $conversation->is_bot_mode ? 'ph-robot' : 'ph-user' }}"></i>
+                                {{ $conversation->is_bot_mode ? 'Bot' : 'Manual' }}
+                            </span>
+                            <span class="lead-badge lead-{{ $conversation->lead_score }}">
+                                <i class="ph-fill ph-flame"></i>
+                                {{ ucfirst($conversation->lead_score) }}
+                            </span>
+                            @if($conversation->unread_count > 0)
+                                <span class="unread-badge">{{ $conversation->unread_count }}</span>
+                            @endif
+                        </div>
                     </div>
-                    <p class="conversation-preview">
-                        Hola, me gustaría saber más sobre sus servicios...
-                    </p>
-                    <div class="conversation-meta">
-                        <span class="mode-indicator mode-bot">
-                            <i class="ph-fill ph-robot"></i> Bot
-                        </span>
-                        <span class="lead-badge lead-warm">
-                            <i class="ph-fill ph-flame"></i> Warm
-                        </span>
-                        <span class="unread-badge">3</span>
+                @empty
+                    <div class="chat-empty-state">
+                        <i class="ph ph-chats-circle"></i>
+                        <h3>No conversations yet</h3>
+                        <p>WhatsApp conversations will appear here when customers message you.</p>
                     </div>
-                </div>
-
-                <!-- Empty state (shown when no real conversations) -->
-                <div class="chat-empty-state" style="display: none;">
-                    <i class="ph ph-chats-circle"></i>
-                    <h3>No conversations yet</h3>
-                    <p>WhatsApp conversations will appear here when customers message you.</p>
-                </div>
+                @endforelse
             </div>
         </div>
 
@@ -182,10 +186,10 @@
     });
 
     function loadConversation(conversationId) {
-        // Placeholder - will be implemented with actual API calls
-        console.log('Loading conversation:', conversationId);
+        // Navigate to conversation show page
+        window.location.href = `/admin/chatbot/conversations/${conversationId}`;
         
-        // For demo: show sample chat
+        // Keep original sample code for reference
         const chatPanel = document.querySelector('.chat-panel');
         if (chatPanel && conversationId === 'sample') {
             chatPanel.innerHTML = `

@@ -1,0 +1,284 @@
+# Plantas — consolidated Notion export
+
+This file was generated from the Notion export located in `storage/app/chatbot-knowledge/plantas-notion`.
+
+---
+
+# Aguacate
+
+Dato : Un solo árbol de aguacate puede vivir más de 100 años. Sus flores contienen ambos sexos, pero funcionan en dos fases separadas, lo que dificulta su autopolinización y hace que “necesite” a otro aguacatero cerca para dar fruto.
+Dificultad: Facil
+Especie: Persea americana
+Iluminacion: Sol directo ☀️. Necesita luz abundante para desarrollarse y fructificar. Idealmente plantado en espacios amplios.
+Riego: Medio a abundante 💧. Riégalo cuando la tierra comience a secarse, especialmente en época de crecimiento.
+Tipo de planta : Frutal
+Tipo de sustrato: Sustrato profundo, suelto y con excelente drenaje 🌿. Prefiere suelo ligeramente ácido y con mucha materia orgánica. Evita suelos arcillosos o pesados.
+
+---
+
+# Anturio blanco
+
+Dato : Por su forma y color, el anturio se asocia con el amor sincero, la hospitalidad y la energía del chakra corazón. En feng shui, se recomienda para armonizar relaciones y aportar vitalidad al hogar.
+Dificultad: Media
+Especie: Anthurium andraeanum
+Iluminacion: Prefiere luz brillante pero siempre indirecta 🌤. Evita el sol directo, que puede quemar sus hojas. Si el follaje se torna opaco o amarillento, es posible que le falte luz. Una ubicación cerca de una ventana orientada al este suele funcionar muy bien.
+Riego: Moderado 💧. Deja secar ligeramente la capa superior del sustrato entre riegos. Las hojas decaídas o con bordes marrones pueden indicar exceso o falta de agua. Prefiere agua de lluvia o filtrada, ya que el agua muy calcárea puede dañarlo.
+Tipo de planta : Con flor
+Tipo de sustrato: El sustrato ideal para el anturio debe ser suelto, aireado y con buen drenaje 🌱. Puedes usar una mezcla de fibra de coco, perlita, turba y corteza de pino. Agradece un sustrato que imite su hábitat natural húmedo y tropical, lo que le permite absorber la humedad sin encharcarse.
+
+Fertilizantes Caseros recomendados:
+
+- Fertilización foliar: Té de cáscara de plátano (2 cáscaras en 1L de agua, reposar 48h). Pulverizar cada 15 días.
+- Fertilización floral: Infusión de hueso de aguacate (hervir 2 huesos en 1L, usar cada 3-4 semanas) — aporta fósforo.
+- Fertilización para enraizamiento: Infusión de lentejas (1 cucharada en 1L, remojar 8h) diluida 1:1, regar raíces una vez al mes.
+
+---
+
+# Bambú
+
+Dato : En la cultura oriental, el bambú representa resistencia, adaptación y vacío interior. Es fuerte, pero se dobla con el viento sin quebrarse, por eso se usa en prácticas como el feng shui y la poesía taoísta.
+Dificultad: Facil
+Especie: Dracaena sanderiana (bambú de la suerte)
+Iluminacion: Luz indirecta media
+Riego: Moderado
+Tipo de planta : Foliar
+Tipo de sustrato: Mezcla drenante, aireada y rica en materia orgánica: humus de lombriz, perlita, fibra de coco y un poco de hojarasca.
+
+---
+
+# Buganvilla
+
+Dato : Se decía que en México “protege los hogares y abre portales de comunicación espiritual cuando florece”.
+Dificultad: Media
+Especie: Bougainvillea glabra
+Iluminacion: Sol directo ☀️. Mientras más luz recibe, más flores produce. En sombra no florece adecuadamente.
+Riego: Poco 💧. Muy resistente a la sequía. Riégala solo cuando el sustrato esté completamente seco.
+Tipo de planta : Con flor
+Tipo de sustrato: Sustrato arenoso, ligero y más bien pobre en nutrientes 🌺. Tolera suelos secos y calcáreos.
+
+---
+
+# Cala
+
+Dato : En el Antiguo Egipto era una flor sagrada de Isis, asociada al renacimiento y la feminidad sagrada.
+Dificultad: Media
+Especie: Zantedeschia spp.
+Iluminacion: Luz brillante indirecta o sol suave de la mañana 🌤. En exteriores, puede estar en semisombra. Demasiada sombra limita la floración, y el sol directo intenso puede quemar sus hojas delicadas.
+Riego: Abundante 💧 durante su floración: la tierra debe mantenerse húmeda (pero no encharcada). Después de florecer, reduce los riegos para respetar su periodo de reposo. Agradece ambientes húmedos.
+Tipo de planta : Con flor
+Tipo de sustrato: Prefiere un sustrato suelto, fértil y que retenga algo de humedad sin encharcarse 🌸. Mezcla: tierra negra, compost, perlita y turba.
+
+---
+
+# Calathea Triostar
+
+Dato : Sus hojas realizan un “ritual” diario: al anochecer se pliegan hacia arriba y al amanecer se despliegan ("plantas de oración").
+Dificultad: Alta
+Especie: Stromanthe sanguinea 'Triostar'
+Iluminacion: Prefiere luz brillante filtrada, nunca sol directo 🌥. Ideal cerca de una ventana con cortina.
+Riego: Moderado 💧. Riégala cuando la capa superior esté apenas seca. Usa agua sin cloro ni cal.
+Tipo de planta : Foliar
+Tipo de sustrato: Sustrato suelto, ligeramente ácido, alta aireación y retención de humedad: turba, perlita, fibra de coco y humus.
+
+---
+
+# Capulí
+
+Dato : El capulí florece antes de que broten sus hojas, cubriendo el árbol con pequeñas flores blancas. Sus frutos eran usados por los pueblos andinos.
+Dificultad: Media
+Especie: Prunus serotina subsp. capuli
+Iluminacion: Sol directo ☀️. Necesita luz plena para florecer y fructificar.
+Riego: Medio
+Tipo de planta : Con flor
+Tipo de sustrato: Sustrato profundo y fértil, ligeramente ácido, buen drenaje, alto en materia orgánica.
+
+---
+
+# Cedrón
+
+Dato : Al frotar una hoja libera aceites cítricos relajantes; se usa como aromatizante y repelente de insectos.
+Especie: Aloysia citrodora
+Iluminacion: Sol directo suave o media sombra ☀️.
+Riego: Medio 💧.
+Tipo de planta : Con flor
+Tipo de sustrato: Suelto, fértil y ligeramente ácido; tierra de jardín con compost y buen drenaje.
+
+---
+
+# Cholán
+
+Dato : La flor del cholán simboliza alegría y buena suerte; nombre común “Esperanza”.
+Dificultad: Media
+Especie: Tecoma stans
+Iluminacion: Sol directo ☀️.
+Riego: Medio 💧.
+Tipo de planta : Con flor
+Tipo de sustrato: Sustrato arenoso, bien drenado, con materia orgánica.
+
+---
+
+# Correspondencias Referenciales Plantas
+
+(Contains tables of correspondences, numbers, zodiac, colors and esoteric attributes — preserved from the export.)
+
+---
+
+# Helecho Nativo
+
+Dato : Los helechos existen desde hace más de 350 millones de años.
+Dificultad: Media
+Especie: Polypodiaceae
+Iluminacion: Luz indirecta suave o sombra clara 🌥️.
+Riego: Medio 💧. Mantén sustrato ligeramente húmedo.
+Tipo de planta : Foliar
+Tipo de sustrato: Rico en materia orgánica, turba, hojarasca y perlita.
+
+---
+
+# Higuero
+
+Dato : La higuera aparece en numerosas tradiciones espirituales; Ficus religiosa es notable en budismo.
+Especie: Crescentia cujete
+Iluminacion: Sol directo o luz filtrada intensa 🌞.
+Riego: Medio 💧.
+Tipo de planta : Frutal
+Tipo de sustrato: Sustrato suelto, buena aireación y materia orgánica.
+
+---
+
+# Jade
+
+Dato : Hojas redondeadas; en feng shui atrae prosperidad.
+Especie: Crassula ovata
+Iluminacion: Sol directo o muy brillante ☀️.
+Riego: Muy poco 💧. Solo cuando sustrato esté seco.
+Tipo de planta : Foliar
+Tipo de sustrato: Arenoso y excelente drenaje (mezcla cactus + perlita).
+
+---
+
+# Limonero
+
+Dato : Simboliza bienestar; aroma cítrico.
+Especie: Citrus limon
+Iluminacion: Sol directo ☀️ (6+ horas).
+Riego: Abundante 💧 pero sin encharcar.
+Tipo de planta : Frutal
+Tipo de sustrato: Fértil, ligeramente ácido, con buen drenaje (tierra negra + compost + arena).
+
+---
+
+# Monstera Adasonii
+
+Dato : Perforaciones en hojas ayudan con tormentas y luz.
+Especie: Monstera adansonii
+Iluminacion: Luz indirecta intermedia 🌤.
+Riego: Moderado 💧. Dejar secar entre riegos.
+Tipo de planta : Foliar
+Tipo de sustrato: Drenante, aireado y rico en materia orgánica (humus, perlita, fibra de coco).
+
+---
+
+# Monstera Deliciosa
+
+Dato : "Planta del alma", adaptable.
+Especie: Monstera deliciosa
+Iluminacion: Indirecta brillante o sombra parcial.
+Riego: Moderado 💧.
+Tipo de planta : Foliar
+Tipo de sustrato: Turba, perlita, compost, corteza.
+
+---
+
+# Pensamiento
+
+Dato : Históricamente usado en filtros de amor.
+Especie: Viola tricolor
+Iluminacion: Luz directa suave o semisombra 🌤.
+Riego: Moderado 💧.
+Tipo de planta : Con flor
+Tipo de sustrato: Suelto, fresco y rico en materia orgánica.
+
+---
+
+# Plantas (Guía general)
+
+Includes general guidance on:
+- Tipos de planta (con flor / foliar)
+- Tipos de sustrato
+- Iluminación (Luz directa, Indirecta brillante, Indirecta moderada, Baja luz)
+- Riego (Abundante 3-5x/wk, Moderado 2-3x/wk, Escaso 1x/week or every 15 days)
+
+---
+
+# Plantas Formulario
+
+(Reference to the form and links included in the export.)
+
+---
+
+# San Pedro
+
+Dato : Cactus chamánico, enteógeno (Echinopsis pachanoi).
+Iluminacion: Sol directo ☀️.
+Riego: Muy poco 💧.
+Tipo de planta : Con flor
+Tipo de sustrato: Muy drenante y arenoso (mezcla para cactus).
+
+---
+
+# Sanseviera
+
+Dato : "Planta guardiana"; tolera poca luz.
+Especie: Sansevieria trifasciata
+Iluminacion: Luz baja a media 🌥.
+Riego: Muy poco 💧.
+Tipo de planta : Foliar
+Tipo de sustrato: Muy bien drenado.
+
+---
+
+# Schefflera
+
+Dato : Hojas palmadas; atrapa energía positiva.
+Especie: Schefflera arboricola
+Iluminacion: Luz brillante indirecta 🌤.
+Riego: Moderado 💧.
+Tipo de planta : Foliar
+Tipo de sustrato: Fértil y con buen drenaje.
+
+---
+
+# Syngonium (Confetti / Neon Pink / Three Kings)
+
+Notas combinadas:
+- Especies: Syngonium podophyllum cultivars
+- Iluminación: Luz indirecta brillante 🌤; evita sol directo.
+- Riego: Moderado 💧; mantener sustrato apenas húmedo.
+- Tipo de sustrato: Turba, perlita, fibra de coco; poroso y aireado.
+
+---
+
+# Tocte - Nogal Ecuatoriano
+
+Dato : Frutal valioso por sombra y protección del suelo.
+Especie: Juglans neotropica
+Iluminacion: Luz solar abundante ☀️.
+Riego: Medio 💧.
+Tipo de planta : Frutal
+Tipo de sustrato: Profundo, fértil y bien drenado.
+
+---
+
+# Zamioculca
+
+Dato : "Planta millonaria"; tolera poca luz.
+Especie: Zamioculcas zamiifolia
+Iluminacion: Luz baja a media 🌤️.
+Riego: Poco 💧; dejar secar entre riegos.
+Tipo de planta : Foliar
+Tipo de sustrato: Muy bien drenado, suelto y aireado.
+
+---
+
+End of consolidated export.

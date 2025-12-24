@@ -3,12 +3,12 @@
 @section('title','Dashboard')
 
 @section('content')
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-        <h1 style="margin: 0;">Hello, {{ auth()->user()->name }}</h1>
+    <div class="dashboard-header">
+        <h1>Hello, {{ auth()->user()->name }}</h1>
         
-        <form method="GET" action="/admin" style="display: flex; align-items: center; gap: 0.75rem;">
-            <label for="days" style="font-size: 0.95rem; font-weight: 500; color: #333;">New entries from last:</label>
-            <select name="days" id="days" onchange="this.form.submit()" style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 8px; background: white; font-size: 0.95rem; cursor: pointer; font-family: inherit;">
+        <form method="GET" action="/admin">
+            <label for="days">New entries from last:</label>
+            <select name="days" id="days" onchange="this.form.submit()">
                 <option value="7" {{ $days == 7 ? 'selected' : '' }}>7 days</option>
                 <option value="14" {{ $days == 14 ? 'selected' : '' }}>14 days</option>
                 <option value="30" {{ $days == 30 ? 'selected' : '' }}>30 days</option>

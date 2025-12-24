@@ -48,7 +48,7 @@
         </div>
         <div class="text-container">
           <h2>Composicion</h2>
-          <p>Nuestras urnas están compuestas de una mezcla cuidadosamente seleccionada de vermiculita, fibra de coco y humus. Estos materiales proporcionan <span class="highlights-c">los nutrientes necesarios para que la planta asimile la ceniza y crezca saludablemente</span>.</p>
+          <p>Nuestras urnas están compuestas de ingredientes compostables naturales que ayudan a neutralizar las cenizas y permiten que la planta crezca saludablemente. Estos materiales proporcionan <span class="highlights-c">los nutrientes necesarios para que la planta asimile la ceniza y crezca saludablemente</span>.</p>
         </div>
       </div>
       <div class="container">
@@ -57,7 +57,7 @@
         </div>
         <div class="text-container">
           <h2>Riego</h2>
-          <p>Cuando entra en contacto con el agua, la mezcla de vermiculita, fibra de coco y humus dentro de la urna se activa, liberando gradualmente los nutrientes necesarios para el crecimiento de la planta.<br> <span class="highlights-c">¡Sólo necesitarás regar tu planta!</span></p>
+          <p>Cuando entra en contacto con el agua, los materiales compostables dentro de la urna se activan, liberando gradualmente los nutrientes necesarios para el crecimiento de la planta.<br> <span class="highlights-c">¡Sólo necesitarás regar tu planta!</span></p>
         </div>
       </div>
       <div class="container container-b">
