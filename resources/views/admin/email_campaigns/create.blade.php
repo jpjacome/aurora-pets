@@ -40,6 +40,36 @@
                     foreach (glob($templatePath.'/*.blade.php') as $file) {
                         $name = basename($file, '.blade.php');
                         $content = file_get_contents($file);
+
+                        // Remove UTF-8 BOM if present
+                        if (substr($content, 0, 3) === "\xEF\xBB\xBF") {
+                            $content = substr($content, 3);
+                        }
+
+                        // Detect encoding explicitly and convert common encodings to UTF-8
+                        $detected = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true);
+                        if ($detected && strtoupper($detected) !== 'UTF-8') {
+                            try {
+                                $content = mb_convert_encoding($content, 'UTF-8', $detected);
+                            } catch (\Exception $e) {
+                                \Log::warning('Failed to convert template to UTF-8 using detected encoding', ['file' => $file, 'detected' => $detected, 'error' => $e->getMessage()]);
+                            }
+                        }
+
+                        // If still not valid UTF-8, try Windows-1252 -> UTF-8 via iconv or utf8_encode as last resort
+                        if (!mb_check_encoding($content, 'UTF-8')) {
+                            try {
+                                $tmp = @iconv('CP1252', 'UTF-8//IGNORE', $content);
+                                if ($tmp !== false) {
+                                    $content = $tmp;
+                                } else {
+                                    $content = utf8_encode($content);
+                                }
+                            } catch (\Exception $e) {
+                                \Log::warning('Fallback UTF-8 conversion failed for template', ['file' => $file, 'error' => $e->getMessage()]);
+                            }
+                        }
+
                         $templates[] = ['name' => $name, 'content' => base64_encode($content)];
                     }
                 }

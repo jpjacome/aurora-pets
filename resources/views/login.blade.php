@@ -27,7 +27,6 @@
         <button type="submit" class="btn btn-primary">Login</button>
       </div>
     </form>
-    <div class="login-footer">If you need access, contact the site administrator.</div>
   </main>
 
 @endsection

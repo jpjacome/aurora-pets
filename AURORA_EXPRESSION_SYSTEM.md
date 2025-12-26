@@ -74,8 +74,11 @@ private function detectExpression(string $userMessage, string $aiResponse, array
         }
     }
     
-    // DEEP GRIEF - Deep Sadness or Compassionate
-    $griefKeywords = ['perdí', 'se fue', 'ya no está', 'partió', 'lo extraño', 'la extraño', 'hace poco', 'ayer', 'anoche'];
+    // DEEP GRIEF - Deep Sadness or Compassionate (expanded)
+    // Notes: we now include fuzzy matching to tolerate small typos (e.g., "murioi") and
+    // also detect combined signals like "cenizas" + "estoy muy triste" to prioritize compassion.
+    // This ensures users who mention ashes or express sadness still receive empathetic replies.
+    $griefKeywords = ['perdí', 'se fue', 'ya no está', 'partió', 'lo extraño', 'la extraño', 'hace poco', 'ayer', 'anoche', 'murió', 'murio', 'falleció'];
     foreach ($griefKeywords as $keyword) {
         if (str_contains($userLower, $keyword)) {
             // If very recent or intense grief

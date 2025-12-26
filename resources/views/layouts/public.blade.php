@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="@yield('meta_description', 'Aurora ofrece servicios funerarios dignos para mascotas en Ecuador. Urnas biodegradables que transforman las cenizas en plantas. Cremación en Quito, Guayaquil y Cuenca.')">
     <meta name="keywords" content="@yield('meta_keywords', 'urnas mascotas, cremación mascotas Ecuador, urna biodegradable, servicios funerarios mascotas, Quito, Guayaquil, Cuenca')">
     <title>@yield('title', 'Aurora Pets')</title>

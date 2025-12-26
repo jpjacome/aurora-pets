@@ -463,7 +463,15 @@ document.addEventListener('DOMContentLoaded', function () {
             const sel = templateSelect.value;
             if (!sel) { alert('Select a template'); return; }
             try {
-                const content = atob(sel);
+                // UTF-8 safe decode of base64 content (supports accents & multi-byte)
+                let content;
+                try {
+                    const bytes = Uint8Array.from(atob(sel), c => c.charCodeAt(0));
+                    content = new TextDecoder('utf-8').decode(bytes);
+                } catch (e) {
+                    // Fallback for older browsers: atob only (server normalization should ensure UTF-8)
+                    content = atob(sel);
+                }
                 if (!templateBody) return;
                 if (confirm('Load template into Template Body? This will replace current content.')) {
                     templateBody.value = content;

@@ -23,4 +23,7 @@ return [
 
     // Default timezone used for greeting and time-based behavior (Bogotá / Quito)
     'default_timezone' => env('CHATBOT_DEFAULT_TIMEZONE', 'America/Bogota'),
+
+    // Minimum model confidence to accept model-provided expression (0..1)
+    'expression_confidence_threshold' => env('CHATBOT_EXPRESSION_CONFIDENCE_THRESHOLD', 0.6),
 ];

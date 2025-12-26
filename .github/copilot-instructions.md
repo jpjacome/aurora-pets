@@ -2,7 +2,7 @@
 
 ## CRITICAL OPERATIONAL DIRECTIVE
 
-**ANALYSIS-ONLY MODE BY DEFAULT**: Unless the user explicitly requests implementation or file changes, ONLY provide analysis, suggestions, and recommendations. NEVER modify files, create new files, or implement changes without explicit user instruction.
+**ANALYSIS-ONLY MODE BY DEFAULT**: Unless the user explicitly requests implementation or file changes, ONLY provide analysis, suggestions, and recommendations. NEVER modify files, create new files, or implement changes without explicit user instruction. In particular, do **NOT** create, modify, or add any test files (for example, PHPUnit tests under `tests/`) unless the user explicitly asks for them — always ask for and receive explicit permission before adding or editing tests.
 
 **DEPLOYMENT & WORKFLOW CLARIFICATION**: All production updates are applied via FTP (we use FileZilla for uploads). The shared online server also provides a terminal that can be used to run commands on the server when needed; confirm access with the user before attempting remote commands. Development work is done completely locally, and there is a copy of the application hosted online (staging/production) where the prepared artifacts (for example, `vendor/`, compiled assets, and changed files) are uploaded via FTP. Always take backups (files + DB) before performing remote operations and never run destructive database reset commands on production.
 
@@ -298,6 +298,62 @@ ANALYSIS ONLY (unless explicitly requested otherwise):
 6. Provide testing recommendations
 7. Suggest deployment considerations if applicable
 ```
+## Chatbot expression inference (model + local fallback) 🔧
+
+To improve the Aurora persona and the UI expression updates, the chatbot now uses a hybrid model-first approach with a local fallback and safety overrides. Include these rules when you modify or review chatbot behavior:
+
+- **Model output contract (system prompt)**: the model is instructed to append a compact JSON object as the very last line of its reply, with keys:
+  - `expression`: one of `1-1`,`1-2`,`1-3`,`2-1`,`2-2`,`2-3`,`3-1`,`3-2`,`3-3` or `none`
+  - `expression_confidence`: decimal 0.0–1.0
+  Example final line: `{"expression":"1-2","expression_confidence":0.82}`
+  The service strips this JSON before returning the visible text to the user.
+
+- **Server parsing & precedence**: `GroqAIService` will parse the trailing JSON and, if `expression_confidence >= config('chatbot.expression_confidence_threshold', 0.6)`, prefer the model-provided expression (`insights.expression`) and set `insights.expression_source = 'model'`.
+
+- **Local fallback**: If the model does not provide a valid expression, or its confidence is below threshold, the service uses the local `detectExpression()` heuristic (keyword + context based) to infer an expression. `insights.expression_source` will reflect `model_low_confidence` or `local` as appropriate.
+
+- **Safety override for grief**: If local detection indicates *deep grief* (`1-3` or `3-3`) but the model provided a different expression with low or moderate confidence, the service will **override** and use the local grief expression (with a high confidence marker and `expression_source = 'local_override_grief'`). This prevents the model from masking urgent grief signals.
+
+- **Conversation history**: Controllers should send `conversation_history` (array of role/content pairs) to the AI service to give context for expression inference and other insights. The public test page mirrors the admin flow in providing history.
+
+- **Frontend behavior**: UIs (admin & public) should use `insights.expression` when present; otherwise rely on client-side fallback only as an additional safety. When updating UI logic, prefer server expression if `insights.expression_confidence` is present and above the threshold.
+
+- **Logging & telemetry**: When model/local expression disagreement leads to an override, log the event (`expression_source`, `model_confidence`, `local_expression`) for later review and tuning. This helps adjust thresholds and prompt improvements.
+
+- **Configuration**: Use `config('chatbot.expression_confidence_threshold')` (env `CHATBOT_EXPRESSION_CONFIDENCE_THRESHOLD`) to tune acceptance sensitivity. Default is `0.6`.
+
+- **Testing note**: As with other changes, do not add tests automatically unless requested — propose tests first and wait for explicit permission to create them.
+
+---
+
+## MCP Chatbot (Server / Tools / Prompts / Resources) 🔧
+
+To reduce hallucinations and centralize persona & safety rules, the chatbot now exposes a small set of MCP primitives. When modifying or reviewing chatbot behavior, follow these rules and conventions:
+
+- **Purpose**: Move authoritative knowledge, persona rules, and external actions into structured MCP primitives (Resources, Prompts, Tools) to make behavior auditable and testable.
+
+- **Key primitives implemented**:
+  - **KnowledgeResource** (`app/Mcp/Resources/KnowledgeResource.php`) — serves `storage/app/chatbot-knowledge-comprehensive.txt` and exposes metadata (`uri`, `mimeType`, `priority`, `lastModified`). Tests should use a temporary file or mock to avoid depending on the full app boot.
+  - **AuroraPrompt** (`app/Mcp/Prompts/AuroraPrompt.php`) — embeds CRITICAL rules ("NEVER INVENT"), greeting rules (`include_name`, `timezone` args), forbidden phrase checks and the output contract. Use `build()` to construct system instructions and `checkResponseForForbiddenPhrases()` to validate model text.
+  - **PlantLookupTool / PlantRecommendTool** (`app/Mcp/Tools/*`) — DB-backed, structured outputs including `source`, `confidence`, `last_reviewed_at`, and `default_image`. Tools must never return invented facts; when confidence is low tools should signal `should_escalate` instead of fabricating details.
+  - **SendWhatsAppMessageTool** (`app/Mcp/Tools/SendWhatsAppMessageTool.php`) — external-action tool annotated with `#[IsOpenWorld]` and `#[IsIdempotent(true)]`. Default behaviour is **dry-run**; production send requires provider credentials and active queue workers. Add job `App\Jobs\SendWhatsAppMessage` to encapsulate provider calls.
+
+- **GroqAIService integration**:
+  - Prefer MCP tools via helper methods (e.g., `findPlantMatch()`, `recommendPlantsByCriteria()`); fall back to `PlantKnowledgeService` for backward compatibility. This centralizes decision logic and prevents duplicate source-of-truth logic across the codebase.
+
+- **Testing & CI guidance**:
+  - Keep unit tests **DB-independent** by mocking `PlantKnowledgeService` (or the relevant MCP tool) to keep tests fast and CI-friendly.
+  - Add unit tests that assert: forbidden phrases are detected, greeting normalization works (timezone + include_name), plant direct/confirm/recommend flows escalate when DB confidence < threshold, and tools return the expected fields and types.
+  - Add Inspector/CI checks to validate prompt output contract (the appended JSON with `expression` + `expression_confidence`) and to scan for forbidden phrases in generated outputs when possible.
+
+- **Deployment & rollback notes**:
+  - Deploy to **staging** first. Run unit tests and smoke tests (public test page `/chatbot`, tinker checks for `KnowledgeResource` and `AuroraPrompt`). Verify `SendWhatsAppMessageTool` behaves as `dry_run` in staging before enabling real sends.
+  - After upload, run `php artisan optimize:clear` and verify caches. Do not change unrelated env settings when deploying these changes.
+
+- **Backward compatibility & safety**:
+  - Annotate tools that do external effects and ensure idempotency where relevant. Maintain fallbacks in `GroqAIService` to avoid regressions. Ensure tests asserting non-hallucination behavior are present before enabling further automation.
+
+---
 
 ### Code Suggestion Guidelines
 - Always include proper type hints and return types

@@ -52,6 +52,34 @@ class GenericCampaignMailable extends Mailable
             }
 
             $body = str_replace("{{{$key}}}", $replacement, $body);
+            // Also replace neutral placeholder format [[key]] used by campaign templates
+            $body = str_replace('[[' . $key . ']]', $replacement, $body);
+        }
+
+        // Convert relative image src (src="/path") to absolute URLs so external providers can fetch them
+        $body = preg_replace_callback('/src="(\/[^\"]+)"/i', function ($m) {
+            return 'src="' . url($m[1]) . '"';
+        }, $body);
+
+        // Convert protocol-relative (//domain/path) to absolute with current scheme
+        $body = preg_replace_callback('/src="\/\/([^\"]+)"/i', function ($m) {
+            return 'src="' . request()->getScheme() . '://' . $m[1] . '"';
+        }, $body);
+
+        // Convert relative hrefs (href="/path") to absolute URLs so click-tracking wrapper will work
+        $body = preg_replace_callback('/href="(\/[^\"]+)"/i', function ($m) {
+            return 'href="' . url($m[1]) . '"';
+        }, $body);
+
+        // Defensive: remove unrendered Blade/PHP tokens that could break external providers (e.g., {{ $user->name }})
+        if (preg_match('/\{\{\s*\$|<\?php|@php/', $body)) {
+            \Log::warning('Campaign body contains unrendered Blade/PHP tokens; removing them', ['campaign_id' => $this->campaign->id ?? null]);
+            // remove Blade-style PHP variable tokens like {{ $user->name }}
+            $body = preg_replace('/\{\{\s*\$[^}]+\}\}/', '', $body);
+            // remove @php ... @endphp blocks
+            $body = preg_replace('/@php\b[\s\S]*?@endphp\b/', '', $body);
+            // remove any inline PHP tags
+            $body = preg_replace('/<\?[\s\S]*?\?>/', '', $body);
         }
 
         $pixelUrl = url('/email/track/open/' . $this->message->message_uuid);

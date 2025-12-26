@@ -68,9 +68,7 @@ class GroqAIService
                 if ($extractedFromAssistant) {
                     // User responded to a confirmation prompt
                     if ($this->isAffirmative($message)) {
-                        $plantService = app(\App\Services\PlantKnowledgeService::class);
-                        $plant = $plantService->findBestMatch($extractedFromAssistant);
-
+                        $plant = $this->findPlantMatch($extractedFromAssistant, 1);
                         if ($plant && ($plant['confidence'] ?? 0) >= 0.6) {
                             $aiResponse = $this->formatPlantReply($plant) . "\n\nSource: " . ($plant['source'] ?? 'plants table') . ($plant['last_reviewed_at'] ? ' — reviewed ' . $plant['last_reviewed_at'] : '');
                             $insights = $this->analyzeConversation($message, $aiResponse, $conversationHistory);
@@ -100,12 +98,11 @@ class GroqAIService
                 }
 
                 // Otherwise classify the plant intent from the message (direct / confirm / recommend / none)
-                $class = $this->classifyPlantIntent($message);
+                $class = $this->classifyPlantIntent($message, $conversationHistory);
 
                 if ($class['type'] === 'direct') {
-                    $plantService = app(\App\Services\PlantKnowledgeService::class);
                     $target = $class['extracted'] ?? $message;
-                    $plant = $plantService->findBestMatch($target);
+                    $plant = $this->findPlantMatch($target, 1);
 
                     if ($plant && ($plant['confidence'] ?? 0) >= 0.75) {
                         $aiResponse = $this->formatPlantReply($plant);
@@ -139,12 +136,46 @@ class GroqAIService
                 if ($class['type'] === 'recommend') {
                     // If user already included constraints, attempt DB-backed recommendations
                     $criteria = $this->buildRecommendCriteriaFromMessage($message);
+
+                    // Follow-up handling: if previous assistant response was a list/recommend and the current short reply
+                    // is a follow-up like 'y las de exterior', treat it as list_all with the specified location
+                    if (empty($criteria) && isset($lastAssistant) && preg_match('/(plantas del cat[áa]logo|estas son las plantas|puedo recomendarte|lista de plantas|lista)/i', $lastAssistant)) {
+                        $m_norm = $this->normalizeText($message);
+                        if (preg_match('/\b(y\s+las\s+de|las\s+de)\s+(interior|exterior)\b/i', $m_norm, $mm)) {
+                            $criteria = ['location' => ($mm[2] === 'interior' ? 'indoor' : 'outdoor'), 'list_all' => true];
+                        } elseif (preg_match('/\b(interior|exterior)\b/i', $m_norm, $mm2)) {
+                            $criteria = ['location' => ($mm2[1] === 'interior' ? 'indoor' : 'outdoor'), 'list_all' => true];
+                        } elseif (preg_match('/\blas que (necesitan|requieren) (mucha luz|poca luz|luz directa|luz indirecta|luz baja)\b/i', $m_norm, $mm3)) {
+                            $light = $mm3[2];
+                            if (preg_match('/(mucha|directa)/i', $light)) $criteria['light'] = 'high';
+                            elseif (preg_match('/(poca|baja)/i', $light)) $criteria['light'] = 'low';
+                            elseif (preg_match('/indirect/i', $light)) $criteria['light'] = 'medium';
+                            $criteria['list_all'] = true;
+                        }
+                    }
+
                     if (!empty($criteria)) {
-                        $plantService = app(\App\Services\PlantKnowledgeService::class);
-                        $candidates = $plantService->recommendPlants($criteria, 5);
+                        // If the user asked for the full list, increase the cap
+                        $max = (!empty($criteria['list_all'])) ? 100 : 5;
+                        $candidates = $this->recommendPlantsByCriteria($criteria, $max);
 
                         if (!empty($candidates)) {
                             $names = array_map(function($c){ return $c['name']; }, $candidates);
+
+                            // Determine verbosity rules for list responses:
+                            // - If explicit list_all requested -> names-only
+                            // - If criteria contain water/light filters and results are many -> names-only
+                            // - If few candidates (<=2) -> include summaries
+                            $count = count($candidates);
+                            $shouldNamesOnly = !empty($criteria['list_all'])
+                                || ((isset($criteria['water']) || isset($criteria['light']) || isset($criteria['location'])) && $count > 2);
+
+                            if ($shouldNamesOnly) {
+                                $aiResponse = "Estas son las plantas del catálogo: " . implode(', ', $names) . ".";
+                                $insights = ['intent' => 'plant_recommend', 'candidates' => $names, 'list_all' => !empty($criteria['list_all']), 'brief_list' => true];
+                                return ['response' => $aiResponse, 'insights' => $insights, 'success' => true];
+                            }
+
                             $summaryLines = array_map(function($c){
                                 $parts = [$c['name']];
                                 if (!empty($c['summary'])) $parts[] = $c['summary'];
@@ -152,7 +183,9 @@ class GroqAIService
                             }, $candidates);
 
                             $aiResponse = "Puedo recomendarte estas opciones del catálogo: " . implode(', ', $names) . ".\n\n" . implode("\n", $summaryLines) . "\n\nSource: plants table";
-                            return ['response' => $aiResponse, 'insights' => ['intent' => 'plant_recommend', 'candidates' => $names], 'success' => true];
+                            $insights = ['intent' => 'plant_recommend', 'candidates' => $names];
+
+                            return ['response' => $aiResponse, 'insights' => $insights, 'success' => true];
                         }
 
                         // No DB matches for constraints - ask clarifying or offer escalation
@@ -206,8 +239,67 @@ class GroqAIService
             }
             $this->lastEstimatedTokens = null;
 
-            // Analyze the conversation for insights
+                // Analyze the conversation for insights (initial pass)
             $insights = $this->analyzeConversation($message, $aiResponse, $conversationHistory);
+
+            // Attempt to parse model-provided expression and confidence from the AI response (if model appended a JSON block)
+            // Expecting something like: {"expression":"1-2","expression_confidence":0.82}
+            $modelExpression = null;
+            $modelExpressionConfidence = null;
+            try {
+                // Look for a JSON object at the end of the response
+                if (preg_match('/(\{[\s\S]*\})\s*$/', $aiResponse, $m)) {
+                    $possibleJson = trim($m[1]);
+                    $decoded = json_decode($possibleJson, true);
+                    if (is_array($decoded) && isset($decoded['expression'])) {
+                        $modelExpression = $decoded['expression'];
+                        if (isset($decoded['expression_confidence'])) {
+                            $modelExpressionConfidence = floatval($decoded['expression_confidence']);
+                        }
+                        // Strip the JSON from the aiResponse so it doesn't show to end-users
+                        $aiResponse = preg_replace('/\{[\s\S]*\}\s*$/', '', $aiResponse);
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::info('[Aurora DEBUG] Failed to parse model expression JSON: ' . $e->getMessage());
+            }
+
+            // If model provided a valid expression with sufficient confidence, prefer it over local detection
+            $threshold = config('chatbot.expression_confidence_threshold', 0.6);
+            if (!is_null($modelExpression) && is_numeric($modelExpressionConfidence) && $modelExpressionConfidence >= $threshold) {
+                $insights['expression'] = $modelExpression;
+                $insights['expression_confidence'] = $modelExpressionConfidence;
+                $insights['expression_source'] = 'model';
+            } elseif (!is_null($modelExpression) && is_numeric($modelExpressionConfidence)) {
+                // Model provided expression but low confidence
+                $insights['expression_source'] = 'model_low_confidence';
+                $insights['expression_confidence'] = $modelExpressionConfidence;
+                // Leave previously detected expression intact (from detectExpression fallback)
+            }
+
+            // Safety override: if local detection indicates clear grief (deep sadness or compassionate) but model
+            // provided a conflicting expression with low confidence, prefer the local grief detection.
+            try {
+                $localExpression = $this->detectExpression($message, $aiResponse, $conversationHistory);
+                $griefExpressions = ['1-3', '3-3'];
+                // If local thinks it's grief and model disagrees with low confidence, override
+                if (in_array($localExpression, $griefExpressions) && isset($insights['expression']) && $insights['expression'] !== $localExpression) {
+                    $modelConf = $insights['expression_confidence'] ?? null;
+                    if (is_null($modelConf) || $modelConf < 0.85) {
+                        Log::info('[Aurora DEBUG] Overriding model expression with local grief detection', [
+                            'local' => $localExpression,
+                            'model' => $insights['expression'] ?? null,
+                            'model_confidence' => $modelConf,
+                        ]);
+
+                        $insights['expression'] = $localExpression;
+                        $insights['expression_confidence'] = 0.95; // high confidence for local override
+                        $insights['expression_source'] = 'local_override_grief';
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::warning('[Aurora DEBUG] Failed to apply local expression override: ' . $e->getMessage());
+            }
 
             // Normalize/enforce time-based greeting at the start of the assistant reply.
             // This ensures the greeting (Buenos días/tardes/noches) is chosen strictly from computed local time.
@@ -229,7 +321,7 @@ class GroqAIService
 
             // Safety: if this is a direct/confirm plant-related query but DB has no confident match, DO NOT return AI-provided plant facts (avoid hallucination)
             try {
-                $class = $this->classifyPlantIntent($message);
+                $class = $this->classifyPlantIntent($message, $conversationHistory);
                 if (in_array($class['type'], ['direct', 'confirm'])) {
                     $plantService = app(\App\Services\PlantKnowledgeService::class);
                     $probeTarget = $class['extracted'] ?? $message;
@@ -477,6 +569,7 @@ class GroqAIService
      */
     private function normalizeText(string $text): string
     {
+        // existing function ... unchanged
         // Attempt transliteration using intl if available
         try {
             if (class_exists('\Transliterator')) {
@@ -519,9 +612,24 @@ class GroqAIService
      * Classify plant intent into types: direct, confirm, recommend, none
      * Returns ['type' => 'direct'|'confirm'|'recommend'|'none', 'extracted' => string|null]
      */
-    private function classifyPlantIntent(string $message): array
+    private function classifyPlantIntent(string $message, array $conversationHistory = []): array
     {
         $m = $this->normalizeText($message);
+
+        // If the last assistant message was a list or a recommend response, treat follow-ups like "y las de exterior" as recommend/list_all
+        $lastAssistant = null;
+        for ($i = count($conversationHistory) - 1; $i >= 0; $i--) {
+            if (($conversationHistory[$i]['role'] ?? '') === 'assistant') {
+                $lastAssistant = $conversationHistory[$i]['content'] ?? null;
+                break;
+            }
+        }
+
+        if ($lastAssistant && preg_match('/(plantas del cat[áa]logo|estas son las plantas|puedo recomendarte|lista de plantas|lista)/i', $lastAssistant)) {
+            if (preg_match('/\b(y\s+las\s+de|las\s+de)\s+(interior|exterior)\b/i', $m) || preg_match('/\b(interior|exterior)\b/i', $m) || preg_match('/\blas que (necesitan|requieren)\b/i', $m)) {
+                return ['type' => 'recommend', 'extracted' => null];
+            }
+        }
 
         // If the message looks like a greeting, don't classify it as plant intent
         if (preg_match('/\b(hola|buenas|buenos|buenas noches|buenos dias|buenas tardes|buen d[ií]a|hi|hello)\b/i', $m)) {
@@ -545,13 +653,22 @@ class GroqAIService
             return ['type' => 'recommend', 'extracted' => null];
         }
 
-        // Short/ambiguous single-word or couple-word messages -> possible confirm
+        // Short/ambiguous single-word or couple-word messages -> possible confirm or recommend criteria
         $words = preg_split('/\s+/', trim($m));
         if (count($words) <= 2 && strlen($m) >= 3) {
-            // Probe DB for a candidate but do not auto-fetch; ask to confirm
+            // First, treat clear recommendation constraints (e.g., 'interior', 'exterior', 'todas') as recommend
             try {
-                $svc = app(\App\Services\PlantKnowledgeService::class);
-                $candidate = $svc->findBestMatch($m, 1);
+                $criteria = $this->buildRecommendCriteriaFromMessage($message);
+                if (!empty($criteria) || preg_match('/\b(interior|exterior|todas|todas las)\b/i', $m)) {
+                    return ['type' => 'recommend', 'extracted' => null];
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::debug('Recommendation probe failed: ' . $e->getMessage());
+            }
+
+            // Otherwise probe DB for a candidate but do not auto-fetch; ask to confirm
+            try {
+                $candidate = $this->findPlantMatch($m, 1);
                 if ($candidate && ($candidate['confidence'] ?? 0) >= 0.6) {
                     \Illuminate\Support\Facades\Log::info('Plant classify quick candidate', ['query' => $m, 'candidate_id' => $candidate['id'] ?? null, 'confidence' => $candidate['confidence'] ?? null]);
                     return ['type' => 'confirm', 'extracted' => $candidate['name'] ?? $m];
@@ -593,6 +710,24 @@ class GroqAIService
         $m = strtolower($this->normalizeText($message));
         $criteria = [];
 
+        // location (interior/exterior/list all)
+        if (preg_match('/\b(interior|interiores)\b/i',$m)) $criteria['location'] = 'indoor';
+        if (preg_match('/\b(exterior|exteriores)\b/i',$m)) $criteria['location'] = 'outdoor';
+        if (preg_match('/\b(todas|todas las|cuales son todas|lista completa|todas las plantas|lista|lista de|lista de plantas|dame la lista|dar la lista|mostrar todas|mostrar lista)\b/i',$m)) $criteria['list_all'] = true;
+        // 'las de interior/exterior' and follow-up phrasing
+        if (preg_match('/\b(las de|la de|los de|y las de|y la de)\s+(interior|exterior)\b/i',$m, $mm)) {
+            $criteria['location'] = $mm[2] === 'interior' ? 'indoor' : 'outdoor';
+            $criteria['list_all'] = true;
+        }
+        // 'las que necesitan X luz' -> treat as list_all with light criteria
+        if (preg_match('/\blas que (necesitan|requieren) (mucha luz|poca luz|luz directa|luz indirecta|luz baja)\b/i',$m, $mm)) {
+            $light = $mm[2];
+            if (preg_match('/(mucha|directa)/i',$light)) $criteria['light'] = 'high';
+            elseif (preg_match('/(poca|baja)/i',$light)) $criteria['light'] = 'low';
+            elseif (preg_match('/indirect/i',$light)) $criteria['light'] = 'medium';
+            $criteria['list_all'] = true;
+        }
+
         // light
         if (preg_match('/poca luz|luz baja|luz tenue|baja/',$m)) {
             $criteria['light'] = 'low';
@@ -600,6 +735,14 @@ class GroqAIService
             $criteria['light'] = 'medium';
         } elseif (preg_match('/luz directa|sol directo|mucha luz|sol/',$m)) {
             $criteria['light'] = 'high';
+        }
+
+        // water requirements (e.g., 'necesitan mucha agua')
+        if (preg_match('/mucha agua|riego frecuente|necesitan mucha agua|requieren mucha agua|requieren riego frecuente/',$m)) {
+            // Catalog values use 'Abundante' (Spanish) — normalize to 'high'
+            $criteria['water'] = 'high';
+        } elseif (preg_match('/poca agua|riego escaso|necesitan poca agua|requieren poca agua/',$m)) {
+            $criteria['water'] = 'low';
         }
 
         // no flowers
@@ -618,19 +761,148 @@ class GroqAIService
 
     private function formatPlantReply(array $plant): string
     {
-        $pieces = [];
-        $pieces[] = trim(($plant['name'] ?? '') . ($plant['scientific_name'] ? ' (' . $plant['scientific_name'] . ')' : ''));
-        if (!empty($plant['summary'])) {
-            $pieces[] = trim($plant['summary']);
-        }
-        $care = $plant['care'] ?? [];
-        $careParts = [];
-        if (!empty($care['watering'])) $careParts[] = "Watering: " . trim($care['watering']);
-        if (!empty($care['lighting'])) $careParts[] = "Light: " . trim($care['lighting']);
-        if (!empty($care['substrate'])) $careParts[] = "Soil: " . trim($care['substrate']);
-        if (!empty($careParts)) $pieces[] = implode(' · ', $careParts);
+        // Use a friendly Spanish summarizer to avoid raw DB dumps and mixed languages
+        return $this->summarizePlantForUser($plant);
+    }
 
-        return implode("\n\n", $pieces);
+    /**
+     * Summarize plant info into a concise, Spanish-first reply.
+     * Avoids copying raw DB labels (e.g., "Watering:") and keeps tone candid.
+     */
+    private function summarizePlantForUser(array $plant): string
+    {
+        $parts = [];
+
+        $name = trim($plant['name'] ?? '');
+        $sci = trim($plant['scientific_name'] ?? '');
+        $title = $name;
+        if (!empty($sci)) $title .= " ({$sci})";
+        $parts[] = $title;
+
+        // Short canonical summary (first sentence of summary)
+        if (!empty($plant['summary'])) {
+            $summary = $this->firstSentence($plant['summary']);
+            if (!empty($summary)) $parts[] = $this->ensureSpanish($summary);
+        }
+
+        // watering / water_requirement
+        $watering = trim($plant['watering_info'] ?? ($plant['water_requirement'] ?? ''));
+        if (!empty($watering)) {
+            $watering = $this->normalizeFieldText($watering);
+            $parts[] = "Riego: " . $watering;
+        }
+
+        // light
+        $light = trim($plant['lighting_info'] ?? ($plant['light_requirement'] ?? ''));
+        if (!empty($light)) {
+            $light = $this->normalizeFieldText($light);
+            $parts[] = "Luz: " . $light;
+        }
+
+        // substrate
+        $soil = trim($plant['substrate_info'] ?? '');
+        if (!empty($soil)) {
+            $soil = $this->firstSentence($soil);
+            $parts[] = "Sustrato: " . $this->ensureSpanish($soil);
+        }
+
+        // Append last reviewed info if present
+        if (!empty($plant['last_reviewed_at'])) {
+            $dt = @date('Y-m-d', strtotime($plant['last_reviewed_at']));
+            if ($dt) $parts[] = "Revisado: {$dt}";
+        }
+
+        // Concatenate with Spanish-friendly punctuation
+        return implode("\n\n", $parts);
+    }
+
+    /**
+     * Extract the first sentence from a block of text (up to the first period, exclamation, or question mark).
+     */
+    private function firstSentence(string $text): string
+    {
+        $text = trim(strip_tags($text));
+        if ($text === '') return '';
+
+        // Look for typical sentence enders
+        if (preg_match('/^(.*?[\.\!\?])\s+/u', $text, $m)) {
+            return trim($m[1]);
+        }
+
+        // If no punctuation, return first 140 chars as a safe summary
+        $short = mb_substr($text, 0, 140, 'UTF-8');
+        if (mb_strlen($text, 'UTF-8') > 140) $short = rtrim($short) . '…';
+        return trim($short);
+    }
+
+    /**
+     * Normalize field text by removing English labels, stripping HTML and normalizing common English phrases into Spanish.
+     */
+    private function normalizeFieldText(string $text): string
+    {
+        $t = trim(strip_tags($text));
+        if ($t === '') return '';
+
+        // Remove English prefix labels like "Watering:" or "Light:"
+        $t = preg_replace('/^\s*(Watering|Light|Water|Soil|Substrate)\s*[:\-]\s*/i', '', $t);
+
+        // Common phrase translations (basic heuristics)
+        $replacements = [
+            '/full\s+sun/i' => 'sol directo',
+            '/partial\s+shade/i' => 'sombra parcial',
+            '/bright\s+indirect/i' => 'luz indirecta brillante',
+            '/low\s+light/i' => 'poca luz',
+            '/medium\s+light/i' => 'luz media',
+            '/water\s+frequently/i' => 'riego frecuente',
+            '/moderate\s+watering/i' => 'riego moderado',
+            '/drought\s+tolerant/i' => 'tolerante a sequía',
+            '/well[-\s]*draining/i' => 'bien drenado',
+        ];
+
+        foreach ($replacements as $pat => $rep) {
+            $t = preg_replace($pat, $rep, $t);
+        }
+
+        // Clean up whitespace and trailing punctuation
+        $t = preg_replace('/\s+/u', ' ', $t);
+        $t = trim($t);
+        $t = rtrim($t, ".,;:\-\s");
+
+        // Capitalize first letter
+        $first = mb_strtoupper(mb_substr($t, 0, 1, 'UTF-8'), 'UTF-8');
+        $rest = mb_substr($t, 1, null, 'UTF-8');
+        return $first . $rest;
+    }
+
+    /**
+     * Ensure the provided text appears Spanish-first; perform a few safe normalizations and remove English labels.
+     */
+    private function ensureSpanish(string $text): string
+    {
+        $t = trim(strip_tags($text));
+        if ($t === '') return '';
+
+        // Replace common English field labels we might see in DB content
+        $t = preg_replace(['/\bWatering\b/i', '/\bLight\b/i', '/\bSoil\b/i', '/\bSubstrate\b/i'], ['', '', '', ''], $t);
+
+        // Normalize whitespace and punctuation
+        $t = preg_replace('/\s+/', ' ', $t);
+        $t = trim($t);
+
+        // If it looks like English short phrases, try a few mapping replacements
+        $map = [
+            '/full sun/i' => 'sol directo',
+            '/partial shade/i' => 'sombra parcial',
+            '/low light/i' => 'poca luz',
+            '/bright indirect/i' => 'luz indirecta brillante',
+            '/moderate watering/i' => 'riego moderado',
+            '/water frequently/i' => 'riego frecuente',
+        ];
+        foreach ($map as $pat => $rep) {
+            $t = preg_replace($pat, $rep, $t);
+        }
+
+        return $t;
     }
 
     /**
@@ -690,9 +962,73 @@ class GroqAIService
     ❌ **No listar fórmulas ni ingredientes propietarios en respuestas normales** — cuando hables de la urna, usa frases genéricas como "ingredientes compostables naturales" o "materiales compostables naturales". Si el usuario pide detalles técnicos, ofrece escalar o pedir permiso para compartir información más técnica.
 
     Responde SIEMPRE como Aurora: observadora, adaptable, honesta, curiosa sobre la naturaleza. 🧡
+
+    **OUTPUT CONTRACT (MACHINE-READABLE)**
+    After your natural language reply, append a single compact JSON object on its own line (the final line of the response) with the following keys to help the UI determine Aurora's expression:
+    - `expression`: one of '1-1','1-2','1-3','2-1','2-2','2-3','3-1','3-2','3-3' (or 'none')
+    - `expression_confidence`: a decimal number between 0.0 and 1.0 representing your confidence in the expression
+
+    Example appended line:
+    {"expression":"1-2","expression_confidence":0.82}
+
+    IMPORTANT: The JSON must be the **last line** and you must not include additional text after it. Keep the JSON compact and machine-parseable.
     PROMPT;
 
         return $basePrompt;
+    }
+
+    /**
+     * Try to find a plant match using MCP tools when present, otherwise fallback to PlantKnowledgeService.
+     */
+    private function findPlantMatch(string $query, int $max = 1): ?array
+    {
+        try {
+            if (class_exists(\App\Mcp\Tools\PlantLookupTool::class)) {
+                $tool = app(\App\Mcp\Tools\PlantLookupTool::class);
+                $req = new \Laravel\Mcp\Request(['query' => $query, 'max_results' => $max]);
+                $resp = $tool->handle($req, app(\App\Services\PlantKnowledgeService::class));
+                if (is_object($resp) && property_exists($resp, 'status') && $resp->status === 200) {
+                    $data = json_decode($resp->getContent(), true);
+                    return $data['candidates'][0] ?? null;
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::debug('findPlantMatch via MCP tool failed: ' . $e->getMessage());
+        }
+
+        try {
+            return app(\App\Services\PlantKnowledgeService::class)->findBestMatch($query, $max);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('findPlantMatch fallback failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Recommend plants by criteria using MCP tool when available, fallback to PlantKnowledgeService.
+     */
+    private function recommendPlantsByCriteria(array $criteria, int $limit = 5): array
+    {
+        try {
+            if (class_exists(\App\Mcp\Tools\PlantRecommendTool::class)) {
+                $tool = app(\App\Mcp\Tools\PlantRecommendTool::class);
+                $req = new \Laravel\Mcp\Request(['criteria' => $criteria, 'max_results' => $limit]);
+                $resp = $tool->handle($req, app(\App\Services\PlantKnowledgeService::class));
+                if (is_object($resp) && property_exists($resp, 'status') && $resp->status === 200) {
+                    $data = json_decode($resp->getContent(), true);
+                    return $data['candidates'] ?? [];
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::debug('recommendPlantsByCriteria via MCP tool failed: ' . $e->getMessage());
+        }
+
+        try {
+            return app(\App\Services\PlantKnowledgeService::class)->recommendPlants($criteria, $limit);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('recommendPlantsByCriteria fallback failed: ' . $e->getMessage());
+            return [];
+        }
     }
 
     /**
@@ -1077,6 +1413,40 @@ class GroqAIService
 
         return 'Buenas noches';
     }
+
+    /**
+     * Approximate contains helper to handle minor typos/fuzzy matches for keywords.
+     */
+    private function approxContains(string $haystack, string $needle): bool
+    {
+        $haystack = trim($haystack);
+        $needle = trim($needle);
+        if ($needle === '' || $haystack === '') {
+            return false;
+        }
+
+        // Direct containment is the fastest check
+        if (str_contains($haystack, $needle)) {
+            return true;
+        }
+
+        // Check word-level fuzzy matches using Levenshtein and similar_text
+        $words = preg_split('/\s+/', $haystack);
+        foreach ($words as $word) {
+            if ($word === '') continue;
+            // Accept tiny typos (distance 1)
+            if (levenshtein($word, $needle) <= 1) {
+                return true;
+            }
+            @similar_text($word, $needle, $percent);
+            if (isset($percent) && $percent >= 80) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Detect appropriate cat expression based on conversation context
      * Returns expression ID (e.g., '2-2' for Friendly Welcome)
@@ -1092,16 +1462,41 @@ class GroqAIService
             return '2-2'; // Friendly Welcome
         }
         
-        // DEEP GRIEF - Deep Sadness or Compassionate (check first so grief shows as sadness rather than generic emergency)
-        $griefKeywords = ['perdi', 'perdi', 'se fue', 'ya no esta', 'partio', 'lo extraño', 'la extraño', 'hace poco', 'ayer', 'anoche', 'murio', 'fallecio', 'muerto', 'acaba de morir'];
+        // DEEP GRIEF - Deep Sadness or Compassionate (expanded): detect explicit grief, fuzzy misspellings
+        $griefKeywords = ['perdi', 'se fue', 'ya no esta', 'partio', 'lo extraño', 'la extraño', 'hace poco', 'ayer', 'anoche', 'murio', 'fallecio', 'muerto', 'acaba de morir'];
+        // Hints for sadness and ashes (used for combined-signal detection)
+        $sadHints = ['triste', 'muy triste', 'devastado', 'no se que hacer', 'estoy muy triste', 'lloro', 'destrozado'];
+        $ashesHints = ['ceniza', 'cenizas', 'urna', 'las cenizas', 'con las cenizas', 'tengo las cenizas'];
+
         foreach ($griefKeywords as $keyword) {
-            if (str_contains($userLower, $keyword)) {
+            if (str_contains($userLower, $keyword) || $this->approxContains($userLower, $keyword)) {
                 // If very recent or intense grief
                 if (str_contains($userLower, 'ayer') || str_contains($userLower, 'anoche') || str_contains($userLower, 'hoy') || str_contains($userLower, 'acaba de')) {
                     return '1-3'; // Deep Sadness
                 }
                 return '3-3'; // Compassionate
             }
+        }
+
+        // Combined-signal: ashes/urns + sadness => compassionate
+        $hasAshes = false;
+        foreach ($ashesHints as $h) {
+            if (str_contains($userLower, $h) || $this->approxContains($userLower, $h)) {
+                $hasAshes = true;
+                break;
+            }
+        }
+
+        $hasSad = false;
+        foreach ($sadHints as $h) {
+            if (str_contains($userLower, $h) || $this->approxContains($userLower, $h)) {
+                $hasSad = true;
+                break;
+            }
+        }
+
+        if ($hasAshes && $hasSad) {
+            return '3-3'; // Compassionate
         }
 
         // EMERGENCY/CRISIS - Focused/Serious

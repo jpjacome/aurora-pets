@@ -421,7 +421,8 @@ footer img{
   padding: 2.25rem;
   width: 420px;
   max-width: calc(100% - 2rem);
-    border: 1px solid var(--color-1);
+  border: 1px solid var(--color-1);
+  border-radius: 30px;
 }
 .login-container h1{
   font-family: var(--font-titles);

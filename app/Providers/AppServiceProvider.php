@@ -22,5 +22,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Use the admin pagination view as the global default for links()
         Paginator::defaultView('vendor.pagination.admin');
+
+        // Load MCP shims for tests when laravel/mcp package is not installed
+        $shim = app_path('Helpers/mcp_shims.php');
+        if (file_exists($shim)) {
+            require_once $shim;
+        }
     }
 }

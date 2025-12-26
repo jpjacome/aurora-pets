@@ -148,12 +148,23 @@ Route::middleware([EnsureAdmin::class])->group(function () {
     Route::post('/admin/email-campaigns/{emailCampaign}/resend', [EmailCampaignController::class, 'resendSelected'])->name('admin.email-campaigns.resend');
 });
 
+// Public test page for chatbot (simple demo)
+Route::view('/chatbot', 'chatbot.public_test')->name('chatbot.public.test');
+// Public chatbot send endpoint (rate limited)
+Route::post('/chatbot/test/send-public', [App\Http\Controllers\ChatbotPublicController::class, 'send'])
+    ->name('chatbot.public.send')
+    ->middleware('throttle:20,1');
 // Public tracking routes
 Route::get('/email/track/open/{uuid}', [EmailTrackingController::class, 'open'])->name('email.track.open');
 Route::get('/r/{uuid}', [EmailTrackingController::class, 'click'])->name('email.track.click');
 
-// Public unsubscribe route
-Route::get('/unsubscribe/{client}/{uuid}', [App\Http\Controllers\UnsubscribeController::class, 'unsubscribe'])->name('unsubscribe');
+// Public unsubscribe routes
+Route::get('/unsubscribe/{client}/{uuid}', [App\Http\Controllers\UnsubscribeController::class, 'confirm'])->name('unsubscribe.confirm');
+Route::post('/unsubscribe/{client}/{uuid}', [App\Http\Controllers\UnsubscribeController::class, 'unsubscribe'])->name('unsubscribe');
 
 // Webhook endpoints for mail providers (e.g. mailgun, sendgrid). Verify signatures in controller.
 Route::post('/webhooks/{provider}', [App\Http\Controllers\WebhookController::class, 'receive'])->name('webhooks.receive');
+
+Route::get('/preview/christmas', function () {
+    return view('admin.email_campaigns.templates.christmas', ['name' => 'Test User']);
+});
